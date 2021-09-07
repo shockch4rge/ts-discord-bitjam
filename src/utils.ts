@@ -1,4 +1,10 @@
-import { Client, ColorResolvable, MessageEmbed, EmbedFieldData, Message } from 'discord.js'
+import { 
+    ColorResolvable, 
+    MessageEmbed, 
+    EmbedFieldData,
+    TextBasedChannels, 
+} 
+from 'discord.js'
 
 // Use object over enum for JavaScript consistency
 export const MessagePriority = {
@@ -16,7 +22,6 @@ export interface YoutubeOptions {
 }
 
 export interface CreateEmbedOptions {
-    bot: Client,
     author?: string,
     priority?: ColorResolvable,
     title?: string,
@@ -36,7 +41,7 @@ export interface CreateEmbedOptions {
 export function createEmbed(opts: CreateEmbedOptions) {
     // Falsy values are allowed here as Discord will just evaluate them as being empty fields.
     return new MessageEmbed()
-    .setAuthor(opts.author ?? "", opts.bot.user?.avatarURL({ format: 'png' }) ?? "")
+    .setAuthor(opts.author ?? "", "https://cdn.discordapp.com/avatars/878323685272997958/024a3c27376cda14684aa3f84d2e421d.png")
     .setColor(opts.priority ?? MessagePriority.DEFAULT)
     .setTitle(opts.title ?? "")
     .setDescription(opts.description ?? "")
@@ -61,20 +66,9 @@ export function formatDuration(ms: number) {
 }
 
 /**
- * Generates a warning message that deletes itself and the user message after a given time.
- * @param bot 
- * @param authorMessage 
- * @param title 
- * @param timeout  
+ * Generates a warning message and sends it
+ * @param content: 
  */
-export async function warn(bot: Client, authorMessage: Message, title: string, timeout: number) {
-    let warning = await authorMessage.channel.send({ 
-        embeds: [createEmbed({
-            bot: bot, author: title, priority: MessagePriority.WARNING 
-        })
-    ]});
-    await delay(timeout);
-    await warning.delete().catch();
-    await authorMessage.delete().catch();
-    return;
+export async function sendWarning(content: string, channel: TextBasedChannels) {
+    return await channel.send({ embeds: [createEmbed({ author: content, priority: MessagePriority.WARNING })] })
 }

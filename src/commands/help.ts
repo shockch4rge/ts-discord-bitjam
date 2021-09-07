@@ -1,10 +1,9 @@
 import { Client, Message } from "discord.js";
-import { createEmbed, delay, MessagePriority } from "../utils";
+import { createEmbed, delay } from "../utils";
 
-export async function helpCommand(bot: Client, message: Message) {
+export async function helpCommand(message: Message) {
     const embed = createEmbed(
-        { 
-            bot: bot, 
+        {  
             author: "Commands", 
             fields: [
                 { name: "`>>search <query>`", value: "Plays an MP3 file or a YouTube link.", inline: true },

@@ -1,11 +1,11 @@
-import { Client, Message } from "discord.js";
+import { Message } from "discord.js";
 import { createEmbed, delay, MessagePriority } from "../utils";
 
-export async function pingCommand(bot: Client, message: Message) {
+export async function pingCommand(ping: number, message: Message) {
     const msg = await message.channel.send(
         { 
             embeds: [createEmbed({ 
-                bot: bot, title: "Pong!  `" + bot.ws.ping + "ms`", priority: MessagePriority.SUCCESS 
+                title: "Pong!  `" + ping + "ms`", priority: MessagePriority.SUCCESS 
             })] 
         }
     );

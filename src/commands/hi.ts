@@ -1,26 +1,22 @@
 import { getVoiceConnection } from "@discordjs/voice";
 import { Client, Message } from "discord.js";
-import { initConnection, initPlayer } from "../player";
-import { createEmbed, MessagePriority, warn } from "../utils";
+import { initPlayer } from "../player";
+import { initConnection } from "../connection";
+import { createEmbed, MessagePriority, sendWarning, delay } from "../utils";
 
-export async function hiCommand(bot: Client, message: Message) {
-    
+export async function hiCommand(message: Message) {
     if (getVoiceConnection(message.guildId!)) {
         await message.react("❌").catch();
-        await warn(bot, message, "The player is already connected to a voice channel!", 7000);
+        const warning = await sendWarning("The player is already connected to a voice channel!", message.channel);
+        await delay(5000)
+        await warning.delete().catch();
+        await message.delete().catch();
         return;
     }
     
-    const player = initPlayer(bot, message);
-    const connection = initConnection(player, bot, message);
+    const player = initPlayer(message);
+    const connection = initConnection(message);
+    connection.subscribe(player);
 
-    await message.delete().catch()
-    await message.channel.send(
-        { 
-            embeds: [createEmbed({ 
-                bot: bot, author: `Connected to ${message.member?.voice.channel}`, priority: MessagePriority.SUCCESS 
-            })] 
-        }
-    );
-
+    await message.delete().catch();
 }
