@@ -10,7 +10,7 @@ from 'discord.js'
 export const MessagePriority = {
     WARNING: "RED",
     SUCCESS: "GREEN",
-    PROMPT: "PINK",
+    PROMPT: "PURPLE",
     NOTIF: "YELLOW",
     DEFAULT: "#2F3136",
 } as const

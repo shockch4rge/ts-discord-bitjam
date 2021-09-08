@@ -1,8 +1,8 @@
 import { getVoiceConnection } from "@discordjs/voice";
-import { Client, Message } from "discord.js";
+import { Message } from "discord.js";
 import { initPlayer } from "../player";
 import { initConnection } from "../connection";
-import { createEmbed, MessagePriority, sendWarning, delay } from "../utils";
+import { sendWarning, delay } from "../utils";
 
 export async function hiCommand(message: Message) {
     if (getVoiceConnection(message.guildId!)) {

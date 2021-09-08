@@ -1,7 +1,7 @@
 import { getVoiceConnection } from "@discordjs/voice";
 import { Message } from "discord.js";
 import { destroyConnection } from "../connection";
-import { createEmbed, sendWarning, delay } from "../utils";
+import { sendWarning, delay } from "../utils";
 
 export async function byeCommand(message: Message) {
     const connection = getVoiceConnection(message.guildId!)

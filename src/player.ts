@@ -9,24 +9,37 @@ import { Message } from "discord.js";
 import { createEmbed, delay, MessagePriority } from "./utils";
 import ytdl from "ytdl-core"
 
+var player: AudioPlayer;
+
 /**
  * Creates a player and initialises its listeners.
  * @param message The user message
  * @returns An {@link AudioPlayer}.
  */
 export function initPlayer(message: Message) {
-    const player = createAudioPlayer();
- 
+    if (!player) {
+        player = createAudioPlayer()
+    }
+    
     // Listeners
     player.on("stateChange", async (oldState, newState) => {
         const newStatus = newState.status;
+        const oldStatus = oldState.status;
+
+        console.log(`Went from ${oldStatus} to ${newStatus}`);
+
+        // Possibly caused by buffering issues
+        if (oldStatus === AudioPlayerStatus.AutoPaused && newStatus === AudioPlayerStatus.Playing) {
+            // prevent other listeners from firing
+            return;
+        }
 
         // Only fires if player is manually paused by user. 'AutoPaused' status can happen when player is idle
         if (newStatus === AudioPlayerStatus.Paused) {
-            const msg = await message.channel.send(
-                { 
-                    embeds: [createEmbed(
-                    { author: "The player is now paused!", priority: MessagePriority.SUCCESS 
+            const msg = await message.channel.send({ 
+                embeds: [createEmbed({ 
+                    author: "The player is now paused!", 
+                    priority: MessagePriority.SUCCESS 
                 })] 
             });
             await delay(5000);
@@ -36,10 +49,10 @@ export function initPlayer(message: Message) {
 
         // The player is currently playing a resource. Possible 'Buffering' status can happen
         else if (newStatus === AudioPlayerStatus.Playing) {
-            const msg = await message.channel.send(
-                { 
-                    embeds: [createEmbed({ 
-                    author: "Playing...", priority: MessagePriority.SUCCESS 
+            const msg = await message.channel.send({ 
+                embeds: [createEmbed({ 
+                    author: "Playing...", 
+                    priority: MessagePriority.SUCCESS 
                 })] 
             });
             await delay(5000);
@@ -49,14 +62,15 @@ export function initPlayer(message: Message) {
 
         // The player has probably finished playing 
         else if (newStatus === AudioPlayerStatus.Idle) {
-            const msg = await message.channel.send(
-                { 
-                    embeds: [createEmbed({ 
-                    author: "Finished playing!", priority: MessagePriority.NOTIF 
+            const msg = await message.channel.send({ 
+                embeds: [createEmbed({ 
+                    author: "Finished playing!", 
+                    priority: MessagePriority.NOTIF 
                 })] 
             });
             await delay(10000);
             await msg.delete().catch();
+
             return;
         }
     });
@@ -68,7 +82,6 @@ export function initPlayer(message: Message) {
     return player;
 }
 
-// Check if we should do creation checks here or in the command file
 export function initMp3Resource(url: string) {
     return createAudioResource(url);
 }

@@ -1,11 +1,12 @@
 import { Message } from 'discord.js';
 import search from 'youtube-search';
-import { createEmbed, formatDuration, sendWarning, YoutubeOptions, delay } from '../utils';
+import { createEmbed, formatDuration, sendWarning, delay } from '../utils';
 import { YT_TOKEN } from '../auth.json';
 import { initPlayer, initYoutubeResource } from '../player';
+import { initConnection } from '../connection';
 
 export async function searchCommand(message: Message) {
-    const matched = message.content.match(/^>>search\s+(.+)/);
+    const matched = message.content.match(/^>>search\s(.+)/);
 
     if (!matched) {
         await message.react("❓").catch();
@@ -48,25 +49,26 @@ export async function searchCommand(message: Message) {
         return;
     }
     
+    const connection = initConnection(message);
     const player = initPlayer(message);
+    
+    connection.subscribe(player);
     player.play(resource);
 
-    const msg = await message.channel.send(
-        { 
-            embeds: [createEmbed(
-                {  
-                    author: "Now playing...", 
-                    title: `${result.title}`,
-                    url: `${result.link}`,
-                    imageUrl: `${result.thumbnails.high?.url}`,
-                    footer: 
-                    resource!.playbackDuration === 0
-                    ? ""
-                    : `Duration: ${formatDuration(resource!.playbackDuration)}`
-                }
-            )]
-        }
-    );
+    const msg = await message.channel.send({ 
+        embeds: [createEmbed({  
+            author: "Now playing...", 
+            title: `${result.title}`,
+            url: `${result.link}`,
+            imageUrl: `${result.thumbnails.high?.url}`,
+            footer: 
+            resource!.playbackDuration === 0
+            ? ""
+            : `Duration: ${formatDuration(resource!.playbackDuration)}`
+        })]
+    });
 
     await message.delete().catch();
+    await delay(15000);
+    await msg.delete().catch();
 }

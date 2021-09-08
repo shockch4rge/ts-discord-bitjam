@@ -1,4 +1,4 @@
-import { Client, Message } from "discord.js";
+import { Message } from "discord.js";
 import { createEmbed, delay } from "../utils";
 
 export async function helpCommand(message: Message) {
