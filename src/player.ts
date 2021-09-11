@@ -6,7 +6,7 @@ import {
 } 
 from "@discordjs/voice";
 import { Message } from "discord.js";
-import { createEmbed, delay, MessagePriority } from "./utils";
+import { createEmbed, delay, MessageLevel } from "./utils";
 import ytdl from "ytdl-core"
 
 var player: AudioPlayer;
@@ -39,7 +39,7 @@ export function initPlayer(message: Message) {
             const msg = await message.channel.send({ 
                 embeds: [createEmbed({ 
                     author: "The player is now paused!", 
-                    priority: MessagePriority.SUCCESS 
+                    level: MessageLevel.SUCCESS 
                 })] 
             });
             await delay(5000);
@@ -52,7 +52,7 @@ export function initPlayer(message: Message) {
             const msg = await message.channel.send({ 
                 embeds: [createEmbed({ 
                     author: "Playing...", 
-                    priority: MessagePriority.SUCCESS 
+                    level: MessageLevel.SUCCESS 
                 })] 
             });
             await delay(5000);
@@ -65,7 +65,7 @@ export function initPlayer(message: Message) {
             const msg = await message.channel.send({ 
                 embeds: [createEmbed({ 
                     author: "Finished playing!", 
-                    priority: MessagePriority.NOTIF 
+                    level: MessageLevel.NOTIF 
                 })] 
             });
             await delay(10000);

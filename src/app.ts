@@ -1,91 +1,52 @@
 import { Client, Intents } from "discord.js";
 import { BOT_TOKEN } from "./auth.json"
-import { byeCommand } from "./commands/bye";
-import { helpCommand } from "./commands/help";
-import { hiCommand } from "./commands/hi";
-import { pingCommand } from "./commands/ping";
-import { playCommand } from "./commands/play";
-import { searchCommand } from "./commands/search";
-import { createChannelCommand } from "./commands/createchannel";
-import { sendWarning, delay } from "./utils";
+import * as ping from "./services/ping";
+import * as ready from "./services/ready";
+import * as help from "./services/help";
+import * as hi from "./services/hi";
+import * as bye from "./services/bye";
+import * as pause from "./services/pause";
+import * as resume from "./services/resume";
+import * as play from "./services/play";
+import * as createChannel from "./services/createchannel";
+import * as search from "./services/search";
 
-const bot = new Client(
-    { 
-        intents: [
-            Intents.FLAGS.GUILDS, 
-            Intents.FLAGS.GUILD_MESSAGES,
-            Intents.FLAGS.GUILD_VOICE_STATES
-        ]
-    }
-);
-
-bot.once("ready", () => {
-    console.log("BitJam is ready!");
-    bot.user!.setPresence({ activities: [{ type: 'LISTENING', name: ">>help" }], status: "online" });
+const bot = new Client({ 
+    intents: [
+        Intents.FLAGS.GUILDS, 
+        Intents.FLAGS.GUILD_MESSAGES,
+        Intents.FLAGS.GUILD_VOICE_STATES,
+    ]
 });
 
-bot.on("messageCreate", async message => {
-    if (message.author.bot) return;
+// on bot ready
+ready.subscribeBotEvents(bot);
 
-    // '>>help'
-    if (message.content.match(/^>>help/)) {
-        await helpCommand(message);
-        return;
-    }
+// '>>help': Show all command info
+help.subscribeBotEvents(bot);
 
-    // '>>ping': Receive the response time of the bot
-    else if (message.content.match(/^>>ping/)) {
-        await pingCommand(bot.ws.ping, message);
-        return;
-    }
+// '>>ping': Receive the response time of the bot
+ping.subscribeBotEvents(bot);
 
-    // '>>channel': Creates a channel to directly search for songs
-    else if (message.content.match(/^>>channel/)) {        
-        await createChannelCommand(bot, message);
-        return;
-    }
+// '>>channel': Create a dedicated channel that takes in only search queries
+createChannel.subscribeBotEvents(bot);
 
-    // Commands that need the user to be connected to a voice channel
-    if (
-        message.content.match(/^>>search\s(.+)/)
-        || message.content.match(/^>>play\s.+/)
-        || message.content.match(/^>>hi/)
-        || message.content.match(/^>>bye/)
-    )
-    {
-        if (!message.member!.voice.channel) {
-            await message.react("❌").catch();
-            const warning = await sendWarning("You must be in a voice channel to use this command!", message.channel);
-            await delay(5000);
-            await warning.delete().catch();
-            await message.delete().catch();
-            return;
-        }
-    }
+// '>>search <query>': Search for a song on YouTube
+search.subscribeBotEvents(bot);
 
-    // '>>search <query>'
-    if (message.content.match(/^>>search\s.+/)) {
-        await searchCommand(message);
-        return;
-    }
+// '>>play <url>': Play a .mp3 file
+play.subscribeBotEvents(bot);
 
-    // '>>play <url>'
-    else if (message.content.match(/^>>play\s.+/)) {
-        await playCommand(message);
-        return;
-    }
+// '>>pause': Pause the player
+pause.subscribeBotEvents(bot);
 
-    // '>>hi'
-    else if (message.content.match(/^>>hi/)) {
-        await hiCommand(message);
-        return;
-    }
+// '>>resume': Resume the player
+resume.subscribeBotEvents(bot);
 
-    // '>>bye'
-    else if (message.content.match(/^>>bye/)) {
-        byeCommand(message);
-        return;
-    }
-});
+// '>>hi': Connect the player to the voice channel
+hi.subscribeBotEvents(bot);
+
+// '>>bye': Disconnect the player from the voice channel
+bye.subscribeBotEvents(bot);
 
 void bot.login(BOT_TOKEN);

@@ -1,5 +1,6 @@
 import { Message } from 'discord.js'
-import { 
+import 
+{ 
     entersState, 
     joinVoiceChannel, 
     VoiceConnection, 
@@ -7,13 +8,8 @@ import {
     VoiceConnectionStatus 
 } 
 from "@discordjs/voice";
-import { 
-    createEmbed, 
-    MessagePriority, 
-    delay, 
-    sendWarning 
-} 
-from "./utils";
+import { createEmbed, MessageLevel, delay, } from "./utils";
+import { sendWarning } from './services/messaging';
 
 /**
  * Connects to a voice channel and initialises its listeners.
@@ -38,14 +34,14 @@ from "./utils";
         if (newStatus === VoiceConnectionStatus.Ready) {
             // No users in the vc before connection is established
             if (!message.member!.voice.channel!) {
-                const warning = await sendWarning("You left the voice channel before the player could connect!", message.channel);
+                const warning = await sendWarning(message, "You left the voice channel before the player could connect!");
                 await warning.delete().catch();
                 return;
             }
 
             const msg = await message.channel.send({ 
                 embeds: [createEmbed({ 
-                    author: `Connected to: ${message.member!.voice.channel!.name}`, priority: MessagePriority.SUCCESS 
+                    author: `Connected to: ${message.member!.voice.channel!.name}`, level: MessageLevel.SUCCESS 
                 })] 
             });
             await delay(10000);
@@ -55,15 +51,18 @@ from "./utils";
 
         // The connection is disrupted. Can be manual or connection issues
         else if (newStatus === VoiceConnectionStatus.Disconnected) {
-            // Was manually disconnected by a user
+            message.member?.permissions.has
+            // Was manually disconnected by a user...?
             if (newState.reason === VoiceConnectionDisconnectReason.Manual) {
-                destroyConnection(connection);
+                connection.destroy()
+                connection.removeAllListeners();
                 return;
             }
 
             // Else, attempt to reconnect to the voice channel
             while (connection.rejoinAttempts < 4) {
                 connection.rejoin();
+                console.log(connection.rejoinAttempts)
 
                 // Check if it enters the Ready status within 5 seconds
                 try {
@@ -76,8 +75,9 @@ from "./utils";
                 }
             }
 
-            destroyConnection(connection);
-            await sendWarning("The player could not reconnect to the channel. Try again later?", message.channel);
+            connection.destroy()
+            connection.removeAllListeners();
+            await sendWarning(message, "The player could not reconnect to the channel. Try again later?");
             return;
         } 
 
@@ -85,7 +85,7 @@ from "./utils";
         else if (newStatus === VoiceConnectionStatus.Destroyed) {
             const msg = await message.channel.send({ 
                 embeds: [createEmbed({ 
-                    author: "Disconnected. Bye!", priority: MessagePriority.NOTIF
+                    author: "Disconnected. Bye!", level: MessageLevel.NOTIF
                 })] 
             });
             await delay(10000);
@@ -100,9 +100,4 @@ from "./utils";
     });
 
     return connection;
-}
-
-export function destroyConnection(connection: VoiceConnection) {
-    connection.destroy();
-    connection.removeAllListeners();
 }
