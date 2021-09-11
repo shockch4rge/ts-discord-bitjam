@@ -1,4 +1,4 @@
-import { AudioPlayerStatus } from "@discordjs/voice";
+import { AudioPlayerStatus, getVoiceConnection } from "@discordjs/voice";
 import { Client, Message } from "discord.js";
 import { initPlayer } from "../player";
 import { handleUserNotConnected, MessageLevel } from "../utils";
@@ -11,12 +11,14 @@ export function subscribeBotEvents(bot: Client) {
 }
 
 async function handleMessageCreate(message: Message) {
+    if (message.author.bot) return;
+    
     if (COMMAND_PAUSE.test(message.content)) {
         if (!message.member?.voice.channel) {
             return await handleUserNotConnected(message);
         }
 
-        await handlePauseCommand(message);
+        return await handlePauseCommand(message);
     }
 }
 
@@ -24,6 +26,10 @@ async function handleMessageCreate(message: Message) {
 async function handlePauseCommand(message: Message) {
     // fix
     const player = initPlayer(message);
+
+    if (!getVoiceConnection(message.guildId!)) {
+        return await handlePlayerNotConnected(message);
+    }
 
     if (player.state.status === AudioPlayerStatus.Paused || player.state.status === AudioPlayerStatus.AutoPaused) {
         return await handleAlreadyPaused(message);
@@ -39,6 +45,12 @@ async function handlePauseCommand(message: Message) {
     await deleteMessages([msg, message]);
 }
 
+
+async function handlePlayerNotConnected(message: Message) {
+    await message.react("❌").catch();
+    const warning = await sendWarning(message, "The player is not connected to a voice channel!");
+    await deleteMessages([warning, message]);
+}
 
 async function handleAlreadyPaused(message: Message) {
     await message.react("❌").catch();

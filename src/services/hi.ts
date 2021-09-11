@@ -11,6 +11,8 @@ export function subscribeBotEvents(bot: Client) {
 }
 
 async function handleMessageCreate(message: Message) {
+    if (message.author.bot) return;
+
     if (COMMAND_HI.test(message.content)) {
         return await handleHiCommand(message);
     }

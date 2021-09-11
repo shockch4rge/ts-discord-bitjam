@@ -10,6 +10,8 @@ export function subscribeBotEvents(bot: Client) {
 }
 
 async function handleMessageCreate(message: Message) {
+    if (message.author.bot) return;
+
     if (COMMAND_BYE.test(message.content)) {
         return await handleByeCommand(message);
     }
@@ -19,8 +21,7 @@ async function handleByeCommand(message: Message) {
     const connection = getVoiceConnection(message.guildId!);
 
     if (!connection) {
-        handlePlayerNotConnected(message);
-        return;
+        return await handlePlayerNotConnected(message);
     }
 
     connection.destroy();

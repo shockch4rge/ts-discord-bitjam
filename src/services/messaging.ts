@@ -3,12 +3,12 @@ import { createEmbed, CreateEmbedOptions, delay, MessageLevel } from "../utils";
 
 export async function sendMessage(message: Message, content: CreateEmbedOptions) {
     const embed = createEmbed(content);
-    return await message.channel.send({ embeds: [embed] });
+    return await message.channel.send({ embeds: [embed] }).catch();
 }
 
 export async function sendWarning(message: Message, content: string) {
     const embed = createEmbed({ author: content, level: MessageLevel.WARNING });
-    return await message.channel.send({ embeds: [embed] });
+    return await message.channel.send({ embeds: [embed] }).catch();
 }
 
 export async function deleteMessages(messages: Message[], wait?: number) {

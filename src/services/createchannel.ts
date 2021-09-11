@@ -12,6 +12,8 @@ export function subscribeBotEvents(bot: Client) {
 }
 
 async function handleMessageCreate(bot: Client, message: Message) {
+    if (message.author.bot) return;
+
     if (COMMAND_CHANNEL.test(message.content)) {
         const guild = bot.guilds.cache.get(message.guildId!);
 

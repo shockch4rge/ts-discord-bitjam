@@ -5,31 +5,39 @@ import { initPlayer, initYoutubeResource } from '../player';
 import { initConnection } from '../connection';
 import { deleteMessages, sendMessage, sendWarning } from './messaging';
 
-const COMMAND_SEARCH = /^>>search\s(.+)/
+const COMMAND_SEARCH = /^>>search\s?/;
+const STRICT_COMMAND_SEARCH = /^>>search\s(.+)/;
 
 export function subscribeBotEvents(bot: Client) {
     bot.on("messageCreate", handleMessageCreate);
 }
 
-async function handleMessageCreate(message: Message) {
-    if (!COMMAND_SEARCH.test(message.content)) {
-        return await handleInvalidMatch(message);
-    }
-    
-    if (!message.member?.voice.channel) {
-        return await handleUserNotConnected(message);
-    }
+async function handleMessageCreate(message: Message) {    
+    if (message.author.bot) return;
 
-    return await handleSearchCommand(message);
+    if (COMMAND_SEARCH.test(message.content)) {
+        if (!message.member?.voice.channel) {
+            return await handleUserNotConnected(message);
+        }
+        return await handleSearchCommand(message);
+    }
 }
 
 // Main function
 async function handleSearchCommand(message: Message) {
-    const query = message.content.match(COMMAND_SEARCH)![1];
+    const matched = message.content.match(STRICT_COMMAND_SEARCH);
+
+    // No match
+    if (!matched) {
+        return await handleInvalidMatch(message);
+    }
+
+    const query = matched[1];
 
     // Calls API
     const fetched = await search(query, YoutubeOptions);
 
+    // No results returned
     if (!fetched) {
         return await handleSearchFailure(message);
     }

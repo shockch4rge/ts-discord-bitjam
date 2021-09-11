@@ -39,8 +39,8 @@ export interface CreateEmbedOptions {
 }
 
 // Migrate to classes
-export interface CommandInterface {
-    subscribeBotEvents: (event: ClientEvents) => void
+export interface EventSubscriber {
+    subscribeBotEvents: (events: ClientEvents[]) => void
 }
 
 /**
