@@ -5,8 +5,8 @@ import { MessageLevel, delay, handleUserNotConnected } from "../utils";
 import { sendWarning, deleteMessages, sendMessage } from "./messaging";
 
 // If starts with '>>play ', contains 'http(s)://', chars 'a-z, 0-9, @, ., /, -', & ends with '.mp3'
-const COMMAND_PLAY = /^>>play\s?/i
 const STRICT_COMMAND_PLAY = /^(>>play)(\s?https?:\/\/[a-z0-9_@\.\/\-]+\.mp3$)/i
+const COMMAND_PLAY = /^>>play\s?/i
 const COMMAND_RESUME = /^>>resume/;
 const COMMAND_PAUSE = /^>>pause/;
 
@@ -15,7 +15,7 @@ const resourceFactory = new ResourceFactory();
 
 export function subscribeBotEvents(bot: Client) {
     bot.on("messageCreate", async message => {
-        await handleMessageCreate(bot, message)
+        return await handleMessageCreate(bot, message);
     });
 }
 
