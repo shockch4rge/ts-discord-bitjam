@@ -2,10 +2,12 @@ import { Client, Message } from 'discord.js';
 import search from 'youtube-search';
 import { formatDuration, YoutubeOptions, handleUserNotConnected } from '../utils';
 import { deleteMessages, sendMessage, sendWarning } from './messaging';
-import { initYoutubeResource } from './resource';
+import { ResourceFactory, YoutubeResource } from './resource';
 
 const COMMAND_SEARCH = /^>>search\s?/;
 const STRICT_COMMAND_SEARCH = /^>>search\s(.+)/;
+
+const resourceFactory = new ResourceFactory();
 
 export function subscribeBotEvents(bot: Client) {
     bot.on("messageCreate", handleMessageCreate);
@@ -42,7 +44,7 @@ async function handleSearchCommand(message: Message) {
     }
 
     const result = fetched.results[0];
-    const resource = initYoutubeResource(result.link)
+    const resource = resourceFactory.make(new YoutubeResource(result.link));
 
     // Youtube returned an invalid link
     if (!resource) {
