@@ -1,24 +1,8 @@
-import { Client, Message, ClientEvents } from "discord.js";
-import { EventSubscriber } from "../utils";
+import { Client, Message } from "discord.js";
+import { MessageLevel } from "../utils";
 import { deleteMessages, sendMessage } from "./messaging";
 
 const COMMAND_PING = /^>>ping/;
-
-// export class Ping implements EventSubscriber {
-//     private subscriber: EventSubscriber;
-
-//     public constructor(subscriber: EventSubscriber) {
-//         this.subscriber = subscriber;
-//     }
-
-//     public lmfao = () => {
-//         this.subscriber.subscribeBotEvents([])
-//     }
-//     subscribeBotEvents(events: ClientEvents[]) {
-//         return console.log("lmfao")
-//     }
-
-// }
 
 export function subscribeBotEvents(bot: Client) {
     bot.on("messageCreate", async message => {
@@ -36,6 +20,7 @@ async function handleMessageCreate(bot: Client, message: Message) {
 }
 
 async function handlePingCommand(bot: Client, message: Message) {
-    const msg = await sendMessage(message, { author: "Pong!  " + `${bot.ws.ping}ms` });
-    await deleteMessages([msg], 10000);
+    const msg = await sendMessage(message, { title: "Pong!  `" + bot.ws.ping + "ms`", level: MessageLevel.NOTIF });
+    await deleteMessages([message], 0);
+    await deleteMessages([msg], 8000);
 }

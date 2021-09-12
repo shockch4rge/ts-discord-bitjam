@@ -1,9 +1,8 @@
 import { Client, Message } from 'discord.js';
 import search from 'youtube-search';
 import { formatDuration, YoutubeOptions, handleUserNotConnected } from '../utils';
-import { initPlayer, initYoutubeResource } from '../player';
-import { initConnection } from '../connection';
 import { deleteMessages, sendMessage, sendWarning } from './messaging';
+import { initYoutubeResource } from './resource';
 
 const COMMAND_SEARCH = /^>>search\s?/;
 const STRICT_COMMAND_SEARCH = /^>>search\s(.+)/;
@@ -50,11 +49,11 @@ async function handleSearchCommand(message: Message) {
         return await handleInvalidResource(message);
     }
 
-    const connection = initConnection(message);
-    const player = initPlayer(message);
+    // const connection = initConnection(message);
+    // const player = initPlayer(message);
     
-    connection.subscribe(player);
-    player.play(resource);
+    // connection.subscribe(player);
+    // player.play(resource);
 
     const msg = await sendMessage(message, {  
         author: "Now playing...", 
