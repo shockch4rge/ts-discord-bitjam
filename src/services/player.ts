@@ -1,8 +1,8 @@
 import { createAudioPlayer, AudioPlayerStatus, getVoiceConnection, AudioPlayer } from "@discordjs/voice";
 import { Client, Message } from "discord.js";
 import { MP3Resource, ResourceFactory } from "./resource";
-import { MessageLevel, delay, handleUserNotConnected } from "../utils";
-import { sendWarning, deleteMessages, sendMessage } from "./messaging";
+import { MessageLevel, delay } from "../utils";
+import { sendWarning, deleteMessages, sendMessage, handleUserNotConnected } from "./messaging";
 
 // If starts with '>>play ', contains 'http(s)://', chars 'a-z, 0-9, @, ., /, -', & ends with '.mp3'
 const STRICT_COMMAND_PLAY = /^(>>play)(\s?https?:\/\/[a-z0-9_@\.\/\-]+\.mp3$)/i

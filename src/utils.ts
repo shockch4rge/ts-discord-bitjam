@@ -1,14 +1,5 @@
-import { 
-    ColorResolvable, 
-    MessageEmbed, 
-    EmbedFieldData,
-    Message,
-    ClientEvents, 
-} 
-from 'discord.js'
-
+import { Message }from 'discord.js'
 import { deleteMessages, sendWarning } from './services/messaging';
-
 import { YT_TOKEN } from './auth.json'
 
 // Use object over enum for JavaScript consistency
@@ -36,11 +27,5 @@ export function formatDuration(ms: number) {
     const min = ms / 1000 / 60
     const sec = ms / 1000 % 60
 
-    return min + ":" + ((sec < 10) ? "0" + sec : sec)
-}
-
-export async function handleUserNotConnected(message: Message) {
-    await message.react("❌").catch();
-    const warning = await sendWarning(message, "You must be in a voice channel to use this command!");
-    await deleteMessages([warning, message]);
+    return `${min}:${((sec < 10) ? 0 + sec : sec)}`
 }

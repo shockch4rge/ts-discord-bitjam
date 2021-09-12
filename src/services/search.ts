@@ -1,7 +1,8 @@
 import { Client, Message } from 'discord.js';
 import search from 'youtube-search';
-import { formatDuration, YoutubeOptions, handleUserNotConnected } from '../utils';
+import { formatDuration, YoutubeOptions } from '../utils';
 import { deleteMessages, sendMessage, sendWarning } from './messaging';
+import { handleUserNotConnected } from './messaging';
 import { ResourceFactory, YoutubeResource } from './resource';
 
 const COMMAND_SEARCH = /^>>search\s?/;

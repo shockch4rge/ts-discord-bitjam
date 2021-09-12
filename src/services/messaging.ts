@@ -18,6 +18,12 @@ export async function deleteMessages(messages: Message[], wait?: number) {
     }
 }
 
+export async function handleUserNotConnected(message: Message) {
+    await message.react("❌").catch();
+    const warning = await sendWarning(message, "You must be in a voice channel to use this command!");
+    await deleteMessages([warning, message]);
+}
+
 /**
  * 
  * @param opts Options for constructing the embed.

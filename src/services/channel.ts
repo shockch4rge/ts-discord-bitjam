@@ -1,7 +1,7 @@
 import { AudioPlayer, entersState, getVoiceConnection, joinVoiceChannel, VoiceConnectionDisconnectReason, VoiceConnectionStatus } from "@discordjs/voice";
 import { Client, Message } from "discord.js";
-import { MessageLevel, delay, handleUserNotConnected } from "../utils";
-import { deleteMessages, sendMessage, sendWarning } from "./messaging";
+import { MessageLevel } from "../utils";
+import { deleteMessages, sendMessage, sendWarning, handleUserNotConnected } from "./messaging";
 
 const COMMAND_HI = /^>>hi/;
 const COMMAND_BYE = /^>>bye/;
