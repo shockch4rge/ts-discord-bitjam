@@ -43,7 +43,7 @@ export async function handleUserNotConnected(message: Message) {
     .setFooter(opts.footer ?? "");
 }
 
-interface CreateEmbedOptions {
+type CreateEmbedOptions = {
     author?: string,
     level?: ColorResolvable,
     title?: string,

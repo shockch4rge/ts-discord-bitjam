@@ -47,7 +47,7 @@ export class YoutubeResource implements Resource {
     }
 }
 
-interface Resource {
-    validate: () => boolean;
-    createResource: () => AudioResource | undefined;
+type Resource = {
+    validate(): boolean,
+    createResource(): AudioResource | undefined,
 }
