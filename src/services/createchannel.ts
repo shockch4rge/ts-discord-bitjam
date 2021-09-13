@@ -1,6 +1,6 @@
 import { Client, Guild, Message } from "discord.js";
 import { MessageLevel } from "../utils";
-import { createEmbed, deleteMessages, sendMessage, sendWarning } from "./messaging";
+import { createEmbed, deleteMessages, sendWarning } from "./messaging";
 
 const COMMAND_CHANNEL = /^>>channel/;
 const CHANNEL_NAME = /^bitjam-requests/
@@ -33,12 +33,12 @@ async function handleChannelCommand(guild: Guild, message: Message) {
     }
 
     const channel = await guild.channels.create("bitjam requests", { 
-        type: "GUILD_TEXT", permissionOverwrites: [{ 
+        type: "GUILD_TEXT", 
+        permissionOverwrites: [{ 
             id: message.guild!.id, 
             allow: ['VIEW_CHANNEL'] 
         }] 
     });
-
 
     const mainMessage = await channel.send({
         content: "__**Queue List:**__",
