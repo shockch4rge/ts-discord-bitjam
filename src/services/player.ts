@@ -1,8 +1,9 @@
-import { createAudioPlayer, AudioPlayerStatus, getVoiceConnection, AudioPlayer } from "@discordjs/voice";
+import { createAudioPlayer, AudioPlayerStatus, getVoiceConnection, AudioPlayer, AudioResource } from "@discordjs/voice";
 import { Client, Message } from "discord.js";
-import { MP3Resource, ResourceFactory } from "./resource";
+import { MP3Resource, ResourceFactory, YoutubeResource } from "./resource";
 import { MessageLevel, delay } from "../utils";
 import { sendWarning, deleteMessages, sendMessage, handleUserNotConnected } from "./messaging";
+import { YouTubeSearchResults } from "youtube-search";
 
 // If starts with '>>play ', contains 'http(s)://', chars 'a-z, 0-9, @, ., /, -', & ends with '.mp3'
 const STRICT_COMMAND_PLAY = /^(>>play)(\s?https?:\/\/[a-z0-9_@\.\/\-]+\.mp3$)/i
@@ -16,6 +17,9 @@ const resourceFactory = new ResourceFactory();
 export function subscribeBotEvents(bot: Client) {
     bot.on("messageCreate", async message => {
         return await handleMessageCreate(bot, message);
+    });
+    bot.on("youtubeLinkFetch", async (url: string, message: Message) => {
+        return await handleYoutubeResource(bot, url, message);
     });
 }
 
@@ -44,6 +48,22 @@ async function handleMessageCreate(bot: Client, message: Message) {
     }
 }
 
+async function handleYoutubeResource(bot: Client, url: string, message: Message) {
+    const player = initPlayer(message); 
+    const resource = resourceFactory.make(new YoutubeResource(url));
+
+    // Youtube returned an invalid link
+    if (!resource) {
+        return await handleInvalidResource(message);
+    }
+
+    bot.emit("beforePlay", player, message);
+
+    // Allow buffer
+    await delay(1000);
+    player.play(resource);
+}
+
 async function handlePlayCommand(bot: Client, message: Message) {
     const player = initPlayer(message);
     const matched = message.content.match(STRICT_COMMAND_PLAY);
@@ -56,7 +76,7 @@ async function handlePlayCommand(bot: Client, message: Message) {
     const resource = resourceFactory.make(new MP3Resource(url));
     
     if (!resource) {
-        return await handleInvalidMatch(message);
+        return await handleInvalidResource(message);
     }
 
     bot.emit("beforePlay", player, message);
@@ -113,6 +133,12 @@ async function handlePlayerNotConnected(message: Message) {
 async function handleInvalidMatch(message: Message) {
     await message.react("❓").catch();
     const warning = await sendWarning(message, "You didn't provide a valid mp3 file/link!");
+    await deleteMessages([warning, message]);
+}
+
+async function handleInvalidResource(message: Message) {
+    await message.react("❗").catch();
+    const warning = await sendWarning(message, "Invalid resource!");
     await deleteMessages([warning, message]);
 }
 

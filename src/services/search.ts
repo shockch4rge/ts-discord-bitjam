@@ -3,30 +3,29 @@ import search from 'youtube-search';
 import { formatDuration, YoutubeOptions } from '../utils';
 import { deleteMessages, sendMessage, sendWarning } from './messaging';
 import { handleUserNotConnected } from './messaging';
-import { ResourceFactory, YoutubeResource } from './resource';
 
 const COMMAND_SEARCH = /^>>search\s?/;
 const STRICT_COMMAND_SEARCH = /^>>search\s(.+)/;
 
-const resourceFactory = new ResourceFactory();
-
 export function subscribeBotEvents(bot: Client) {
-    bot.on("messageCreate", handleMessageCreate);
+    bot.on("messageCreate", async message => {
+        return await handleMessageCreate(bot, message);
+    });
 }
 
-async function handleMessageCreate(message: Message) {    
+async function handleMessageCreate(bot: Client, message: Message) {    
     if (message.author.bot) return;
 
     if (COMMAND_SEARCH.test(message.content)) {
         if (!message.member?.voice.channel) {
             return await handleUserNotConnected(message);
         }
-        return await handleSearchCommand(message);
+        return await handleSearchCommand(bot, message);
     }
 }
 
 // Main function
-async function handleSearchCommand(message: Message) {
+async function handleSearchCommand(bot: Client, message: Message) {
     const matched = message.content.match(STRICT_COMMAND_SEARCH);
 
     // No match
@@ -45,32 +44,18 @@ async function handleSearchCommand(message: Message) {
     }
 
     const result = fetched.results[0];
-    const resource = resourceFactory.make(new YoutubeResource(result.link));
-
-    // Youtube returned an invalid link
-    if (!resource) {
-        return await handleInvalidResource(message);
-    }
-
-    // const connection = initConnection(message);
-    // const player = initPlayer(message);
     
-    // connection.subscribe(player);
-    // player.play(resource);
+    bot.emit("youtubeLinkFetch", result.link, message);
 
     const msg = await sendMessage(message, {  
         author: "Now playing...", 
         title: `${result.title}`,
         url: `${result.link}`,
         imageUrl: `${result.thumbnails.high?.url}`,
-        footer: 
-        resource!.playbackDuration === 0
-        ? ""
-        : `Duration: ${formatDuration(resource!.playbackDuration)}`
     });
 
     await deleteMessages([message], 0);
-    await deleteMessages([msg], 15000);
+    await deleteMessages([msg], 30000);
 }
 
 
@@ -86,8 +71,3 @@ async function handleSearchFailure(message: Message) {
     await deleteMessages([warning, message]);
 }
 
-async function handleInvalidResource(message: Message) {
-    await message.react("❗").catch();
-    const warning = await sendWarning(message, "Invalid YouTube URL!");
-    await deleteMessages([warning, message]);
-}
