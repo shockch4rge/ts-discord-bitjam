@@ -1,53 +1,42 @@
-import { AudioResource, createAudioResource } from "@discordjs/voice";
+import { createAudioResource } from "@discordjs/voice";
 import ytdl from "ytdl-core";
+import { Resource } from '../types'
 
 export class ResourceFactory {
-    public make(resource: Resource) {
-        return resource.createResource();
+    public make(url: string) {
+        if (/^https?:\/\/[a-z0-9_@\.\/\-]+\.mp3$/i.test(url)) {
+            return new MP3Resource(url).create();
+        }
+
+        if (ytdl.validateURL(url)) {
+            return new YoutubeResource(url).create();
+        }
+
+        return undefined;
     }
 }
 
 export class MP3Resource implements Resource {
-    url: string;
+    private readonly url: string;
 
     public constructor(url: string) {
         this.url = url;
     }
 
-    public validate() {
-        return /^https?:\/\/[a-z0-9_@\.\/\-]+\.mp3$/i.test(this.url);
-    }
-
-    public createResource() {
-        if (!this.validate()) {
-            return undefined;
-        }
+    public create() {
         return createAudioResource(this.url);
     }
 }
 
 export class YoutubeResource implements Resource {
-    url: string;
+    private readonly url: string;
 
     public constructor(url: string) {
         this.url = url;
     }
 
-    public validate() {
-        return ytdl.validateURL(this.url);
-    }
-
-    public createResource() {
-        if (!this.validate()) {
-            return undefined;
-        }
-
-        let stream = ytdl(this.url, { filter: 'audioonly' });
+    public create() {
+        const stream = ytdl(this.url, { filter: 'audioonly' });
         return createAudioResource(stream);
     }
-}
-
-type Resource = {
-    validate(): boolean,
-    createResource(): AudioResource | undefined,
 }
