@@ -1,11 +1,14 @@
 import { Client, Message } from 'discord.js';
+import { getData } from 'spotify-url-info';
 import search from 'youtube-search';
-import { formatDuration, YoutubeOptions } from '../utils';
+import { formatDuration, MessageLevel, YoutubeOptions } from '../utils';
 import { deleteMessages, sendMessage, sendWarning } from './messaging';
 import { handleUserNotConnected } from './messaging';
+import { SpotifyTrack } from '../types';
 
 const COMMAND_SEARCH = /^>>search\s?/;
-const STRICT_COMMAND_SEARCH = /^>>search\s(.+)/;
+const COMMAND_SEARCH_YOUTUBE = /^>>search\s(.+)/;
+const COMMAND_SEARCH_SPOTIFY = /^>>search\s(https:\/\/open.spotify.com\/track\/[a-z0-9]+)(\?si=.+)/i;
 
 export function subscribeBotEvents(bot: Client) {
     bot.on("messageCreate", async message => {
@@ -26,14 +29,21 @@ async function handleMessageCreate(bot: Client, message: Message) {
 
 // Main function
 async function handleSearchCommand(bot: Client, message: Message) {
-    const matched = message.content.match(STRICT_COMMAND_SEARCH);
+    let matched = message.content.match(COMMAND_SEARCH_SPOTIFY);
+    let query;
 
     // No match
     if (!matched) {
-        return await handleInvalidMatch(message);
+        matched = message.content.match(COMMAND_SEARCH_YOUTUBE);
+        if (!matched) {
+            return await handleInvalidMatch(message);
+        }
+        query = matched[1];
     }
-
-    const query = matched[1];
+    else {
+        const data = await getData(matched[1]) as SpotifyTrack;
+        query = `${data.name} ${data.artists[0].name} Audio`
+    }
 
     // Calls API
     const fetched = await search(query, YoutubeOptions);
@@ -45,13 +55,14 @@ async function handleSearchCommand(bot: Client, message: Message) {
 
     const result = fetched.results[0];
     
-    bot.emit("youtubeLinkFetch", result.link, message);
+    bot.emit("ytUrlCreate", result.link, message);
 
     const msg = await sendMessage(message, {  
         author: "Now playing...", 
-        title: `${result.title}`,
+        title: `${result.title.toString()}`,
         url: `${result.link}`,
         imageUrl: `${result.thumbnails.high?.url}`,
+        level: MessageLevel.PROMPT,
     });
 
     await deleteMessages([message], 0);
