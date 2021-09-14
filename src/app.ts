@@ -1,5 +1,6 @@
 import { Client, Intents } from "discord.js";
 import { BOT_TOKEN } from "./auth.json"
+import * as test from "./services/testing"
 import * as ping from "./services/ping";
 import * as ready from "./services/ready";
 import * as help from "./services/help";
@@ -18,13 +19,14 @@ const bot = new Client({
 
 const services = 
 [
+    test,
     ping, 
     ready, 
     help, 
     channel, 
     player, 
     createChannel, 
-    search
+    search,
 ];
 
 for (const service of services) {
