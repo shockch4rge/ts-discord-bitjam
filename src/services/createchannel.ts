@@ -1,6 +1,5 @@
 import { Client, Guild, Message } from "discord.js";
-import { MessageLevel } from "../utils";
-import { createEmbed, deleteMessages, sendWarning } from "./messaging";
+import { MessageLevel, createEmbed, deleteMessages, sendWarning } from "./messaging";
 
 const COMMAND_CHANNEL = /^>>channel/;
 const CHANNEL_NAME = /^bitjam-requests/

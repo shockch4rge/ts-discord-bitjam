@@ -1,14 +1,7 @@
 import { YT_TOKEN } from './auth.json'
 
-export enum MessageLevel {
-    WARNING = "RED",
-    SUCCESS = "GREEN",
-    PROMPT = "#DCBDFB",
-    NOTIF = "YELLOW",
-    DEFAULT = "#2F3136",
-}
-
-export const YoutubeOptions = { 
+export const youtubeOptions = 
+{ 
     maxResults: 1, 
     key: YT_TOKEN, 
     type: 'audio',

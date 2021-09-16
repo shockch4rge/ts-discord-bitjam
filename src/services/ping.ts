@@ -1,6 +1,5 @@
 import { Client, Message } from "discord.js";
-import { MessageLevel } from "../utils";
-import { deleteMessages, sendMessage } from "./messaging";
+import { MessageLevel, deleteMessages, sendMessage } from "./messaging";
 
 const COMMAND_PING = /^>>ping/;
 

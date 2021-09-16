@@ -1,5 +1,5 @@
-import { ColorResolvable, EmbedFieldData, Message, MessageEmbed } from "discord.js";
-import { delay, MessageLevel } from "../utils";
+import { ColorResolvable, EmbedFieldData, EmojiIdentifierResolvable, Message, MessageEmbed } from "discord.js";
+import { delay } from "../utils";
 
 export async function sendMessage(message: Message, content: CreateEmbedOptions) {
     const embed = createEmbed(content);
@@ -18,9 +18,9 @@ export async function deleteMessages(messages: Message[], wait?: number) {
     }
 }
 
-export async function handleUserNotConnected(message: Message) {
-    await message.react("❌").catch();
-    const warning = await sendWarning(message, "You must be in a voice channel to use this command!");
+export async function handleError(message: Message, reason: string, reaction?: EmojiIdentifierResolvable) {
+    await message.react(reaction ?? "").catch();
+    const warning = await sendWarning(message, reason);
     await deleteMessages([warning, message]);
 }
 
@@ -43,7 +43,8 @@ export async function handleUserNotConnected(message: Message) {
     .setFooter(opts.footer ?? "");
 }
 
-type CreateEmbedOptions = {
+type CreateEmbedOptions = 
+{
     author?: string,
     level?: ColorResolvable,
     title?: string,
@@ -53,4 +54,13 @@ type CreateEmbedOptions = {
     imageUrl?: string,
     thumbnailUrl?: string,
     footer?: string, 
+}
+
+export enum MessageLevel 
+{
+    WARNING = "RED",
+    SUCCESS = "GREEN",
+    PROMPT = "#DCBDFB",
+    NOTIF = "YELLOW",
+    DEFAULT = "#2F3136",
 }

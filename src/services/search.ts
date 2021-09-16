@@ -1,9 +1,8 @@
 import { Client, Message } from 'discord.js';
 import { getData } from 'spotify-url-info';
 import search from 'youtube-search';
-import { formatDuration, MessageLevel, YoutubeOptions } from '../utils';
-import { deleteMessages, sendMessage, sendWarning } from './messaging';
-import { handleUserNotConnected } from './messaging';
+import { formatDuration, youtubeOptions } from '../utils';
+import { MessageLevel, deleteMessages, handleError, sendMessage } from './messaging';
 import { SpotifyTrack } from '../types';
 
 const COMMAND_SEARCH = /^>>search\s?/;
@@ -21,7 +20,7 @@ async function handleMessageCreate(bot: Client, message: Message) {
 
     if (COMMAND_SEARCH.test(message.content)) {
         if (!message.member?.voice.channel) {
-            return await handleUserNotConnected(message);
+            return await handleError(message, "You must be in a voice channel to use this command!", "❌");
         }
         return await handleSearchCommand(bot, message);
     }
@@ -30,13 +29,13 @@ async function handleMessageCreate(bot: Client, message: Message) {
 // Main function
 async function handleSearchCommand(bot: Client, message: Message) {
     let matched = message.content.match(COMMAND_SEARCH_SPOTIFY);
-    let query;
+    let query = null;
 
     // No match
     if (!matched) {
         matched = message.content.match(COMMAND_SEARCH_YOUTUBE);
         if (!matched) {
-            return await handleInvalidMatch(message);
+            return await handleError(message, "You didn't provide a query!", "❓");
         }
         query = matched[1];
     }
@@ -46,11 +45,11 @@ async function handleSearchCommand(bot: Client, message: Message) {
     }
 
     // Calls API
-    const fetched = await search(query, YoutubeOptions);
+    const fetched = await search(query, youtubeOptions);
 
     // No results returned
     if (!fetched) {
-        return await handleSearchFailure(message);
+        return await handleError(message, "Could not parse search query.", "❗");
     }
 
     const result = fetched.results[0];
@@ -68,17 +67,3 @@ async function handleSearchCommand(bot: Client, message: Message) {
     await deleteMessages([message], 0);
     await deleteMessages([msg], 30000);
 }
-
-
-async function handleInvalidMatch(message: Message) {
-    await message.react("❓").catch();
-    const warning = await sendWarning(message, "You didn't provide a query!");
-    await deleteMessages([warning, message]);
-}
-
-async function handleSearchFailure(message: Message) {
-    await message.react("❗").catch();
-    const warning = await sendWarning(message, "Could not parse search query.")
-    await deleteMessages([warning, message]);
-}
-

@@ -1,11 +1,19 @@
 import { createAudioResource } from "@discordjs/voice";
+import { MediaResource } from '../types'
+import axios from "axios";
 import ytdl from "ytdl-core";
-import { Resource } from '../types'
 
-export class ResourceFactory {
+const MP3_REGEX = /^https?:\/\/[a-z0-9_@\.\/\-]+\.mp3$/i
+
+export class MediaResourceFactory {
     public make(url: string) {
-        if (/^https?:\/\/[a-z0-9_@\.\/\-]+\.mp3$/i.test(url)) {
-            return new MP3Resource(url).create();
+        if (MP3_REGEX.test(url)) { 
+            axios.post(url)
+            .then(() => { return new MP3Resource(url).create(); })
+            .catch(() => { 
+                console.log("ITS WRONG");
+                return undefined; 
+            });
         }
 
         if (ytdl.validateURL(url)) {
@@ -16,7 +24,7 @@ export class ResourceFactory {
     }
 }
 
-export class MP3Resource implements Resource {
+export class MP3Resource implements MediaResource {
     private readonly url: string;
 
     public constructor(url: string) {
@@ -28,7 +36,7 @@ export class MP3Resource implements Resource {
     }
 }
 
-export class YoutubeResource implements Resource {
+export class YoutubeResource implements MediaResource {
     private readonly url: string;
 
     public constructor(url: string) {

@@ -1,24 +1,23 @@
-import { createAudioPlayer, AudioPlayerStatus, getVoiceConnection, AudioPlayer, AudioResource } from "@discordjs/voice";
+import { createAudioPlayer, AudioPlayerStatus, getVoiceConnection, AudioPlayer } from "@discordjs/voice";
 import { Client, Message } from "discord.js";
-import { MP3Resource, ResourceFactory, YoutubeResource } from "./resource";
-import { MessageLevel, delay } from "../utils";
-import { sendWarning, deleteMessages, sendMessage, handleUserNotConnected } from "./messaging";
-import { YouTubeSearchResults } from "youtube-search";
+import { MediaResourceFactory } from "./resource";
+import { delay } from "../utils";
+import { MessageLevel, deleteMessages, sendMessage, handleError } from "./messaging";
 
 // If starts with '>>play ', contains 'http(s)://', chars 'a-z, 0-9, @, ., /, -', & ends with '.mp3'
-const STRICT_COMMAND_PLAY = /^(>>play)(\s?https?:\/\/[a-z0-9_@\.\/\-]+\.mp3$)/i
+const STRICT_COMMAND_PLAY = /^>>play\s(https?:\/\/[a-z0-9_@\.\/\-]+\.mp3$)/i
 const COMMAND_PLAY = /^>>play\s?/i
 const COMMAND_RESUME = /^>>resume/;
 const COMMAND_PAUSE = /^>>pause/;
 
 let player: AudioPlayer;
-const resourceFactory = new ResourceFactory();
+const resourceFactory = new MediaResourceFactory();
 
 export function subscribeBotEvents(bot: Client) {
     bot.on("messageCreate", async message => {
         return await handleMessageCreate(bot, message);
     });
-    bot.on("youtubeLinkFetch", async (url: string, message: Message) => {
+    bot.on("ytUrlCreate", async (url: string, message: Message) => {
         return await handleYoutubeResource(bot, url, message);
     });
 }
@@ -28,33 +27,34 @@ async function handleMessageCreate(bot: Client, message: Message) {
 
     if (COMMAND_PLAY.test(message.content)) {
         if (!message.member?.voice.channel) {
-            return await handleUserNotConnected(message);
+            return await handleError(message, "You must be in a voice channel to use this command!", "❌");
         }
         return await handlePlayCommand(bot, message);
     }
 
     if (COMMAND_RESUME.test(message.content)) {
         if (!message.member?.voice.channel) {
-            return await handleUserNotConnected(message);
+            return await handleError(message, "You must be in a voice channel to use this command!", "❌")
         }
         return await handleResumeCommand(message);
     }
     
     if (COMMAND_PAUSE.test(message.content)) {
         if (!message.member?.voice.channel) {
-            return await handleUserNotConnected(message);
+            return await handleError(message, "You must be in a voice channel to use this command!", "❌")
         }
+
         return await handlePauseCommand(message);
     }
 }
 
 async function handleYoutubeResource(bot: Client, url: string, message: Message) {
     const player = initPlayer(message); 
-    const resource = resourceFactory.make(new YoutubeResource(url));
+    const resource = resourceFactory.make(url);
 
     // Youtube returned an invalid link
     if (!resource) {
-        return await handleInvalidResource(message);
+        return await handleError(message, "Invalid resource!", "❗")
     }
 
     bot.emit("beforePlay", player, message);
@@ -69,14 +69,14 @@ async function handlePlayCommand(bot: Client, message: Message) {
     const matched = message.content.match(STRICT_COMMAND_PLAY);
 
     if (!matched) {
-        return await handleInvalidMatch(message);
+        return await handleError(message, "You didn't provide a valid mp3 file/link!", "❓");
     }
 
-    const url = matched[2].trim();
-    const resource = resourceFactory.make(new MP3Resource(url));
+    const url = matched[1];
+    const resource = resourceFactory.make(url);
     
     if (!resource) {
-        return await handleInvalidResource(message);
+        return await handleError(message, "Invalid resource!", "❗");
     }
 
     bot.emit("beforePlay", player, message);
@@ -92,14 +92,14 @@ async function handleResumeCommand(message: Message) {
     if (!player) return;
 
     if (!getVoiceConnection(message.guildId!)) {
-        return await handlePlayerNotConnected(message);
+        return await handleError(message, "The player is not connected to a voice channel!", "❌");
     }
 
     // Resume
     const resumeSuccess = player.unpause();
     
     if (!resumeSuccess) {
-        return await handleResumeFailure(message);
+        return await handleError(message, "Failed to resume player.", "❌")
     }
 
     const msg = await sendMessage(message, { author: "The player has resumed!", level: MessageLevel.SUCCESS });
@@ -110,48 +110,17 @@ async function handlePauseCommand(message: Message) {
     if (!player) return;
     
     if (!getVoiceConnection) {
-        return await handlePlayerNotConnected(message);
+        return await handleError(message, "The player is not connected to a voice channel!", "❌");
     } 
     
     // Pause
     const pauseSuccess = player.pause(true);
 
     if (!pauseSuccess) {
-        return await handlePauseFailure(message);
+        return await handleError(message, "Failed to pause player.", "❌");
     }
 
-    const msg = await sendMessage(message, { author: "The player has paused!", level: MessageLevel.SUCCESS });
-    await deleteMessages([msg, message]);
-}
-
-async function handlePlayerNotConnected(message: Message) {
-    await message.react("❌").catch();
-    const warning = await sendWarning(message, "The player is not connected to a voice channel!");
-    await deleteMessages([warning, message]);
-}
-
-async function handleInvalidMatch(message: Message) {
-    await message.react("❓").catch();
-    const warning = await sendWarning(message, "You didn't provide a valid mp3 file/link!");
-    await deleteMessages([warning, message]);
-}
-
-async function handleInvalidResource(message: Message) {
-    await message.react("❗").catch();
-    const warning = await sendWarning(message, "Invalid resource!");
-    await deleteMessages([warning, message]);
-}
-
-async function handlePauseFailure(message: Message) {
-    await message.react("❌").catch();
-    const warning = await sendWarning(message, "Failed to pause player.");
-    await deleteMessages([warning, message]);
-}
-
-async function handleResumeFailure(message: Message) {
-    await message.react("❌").catch();
-    const warning = await sendWarning(message, "Failed to resume player.");
-    await deleteMessages([warning, message]);
+    await deleteMessages([message], 0);
 }
 
 function initPlayer(message: Message) {

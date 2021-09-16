@@ -1,7 +1,7 @@
 import { AudioPlayer, entersState, getVoiceConnection, joinVoiceChannel, VoiceConnectionDisconnectReason, VoiceConnectionStatus } from "@discordjs/voice";
 import { Client, Message } from "discord.js";
-import { MessageLevel } from "../utils";
-import { deleteMessages, sendMessage, sendWarning, handleUserNotConnected } from "./messaging";
+import { delay } from "../utils";
+import { MessageLevel, deleteMessages, sendMessage, sendWarning, handleError } from "./messaging";
 
 const COMMAND_HI = /^>>hi/;
 const COMMAND_BYE = /^>>bye/;
@@ -11,6 +11,7 @@ export function subscribeBotEvents(bot: Client) {
         return await handleMessageCreate(bot, message);
     });
     bot.on("beforePlay", handleBeforePlay);
+    bot.on("playerIdle", handlePlayerIdle);
 }
 
 async function handleMessageCreate(bot: Client, message: Message) {
@@ -18,14 +19,14 @@ async function handleMessageCreate(bot: Client, message: Message) {
 
     if (COMMAND_HI.test(message.content)) {
         if (!message.member?.voice.channel) {
-            return await handleUserNotConnected(message);
+            return await handleError(message, "You must be in a voice channel to use this command!", "❌");
         }
         return await handleHiCommand(bot, message);
     }
 
     if (COMMAND_BYE.test(message.content)) {
         if (!message.member?.voice.channel) {
-            return await handleUserNotConnected(message);
+            return await handleError(message, "You must be in a voice channel to use this command!", "❌");
         }
         return await handleByeCommand(bot, message);
     }
@@ -33,7 +34,7 @@ async function handleMessageCreate(bot: Client, message: Message) {
 
 async function handleHiCommand(bot: Client, message: Message) {
     if (getVoiceConnection(message.guildId!)) {
-        return await handlePlayerAlreadyConnected(message);
+        return await handleError(message, "The player is already connected to a voice channel!", "❌");
     }
 
     const connection = initConnection(message);
@@ -44,7 +45,7 @@ async function handleByeCommand(bot: Client, message: Message) {
     const connection = getVoiceConnection(message.guildId!);
 
     if (!connection) {
-        return await handlePlayerNotConnected(message);
+        return await handleError(message, "The player is not connected to a voice channel!", "❌");
     }
 
     connection?.destroy();
@@ -56,16 +57,9 @@ function handleBeforePlay(player: AudioPlayer, message: Message) {
     connection.subscribe(player);
 }
 
-async function handlePlayerAlreadyConnected(message: Message) {
-    await message.react("❌").catch();
-    const warning = await sendWarning(message, "The player is already connected to a voice channel!");
-    await deleteMessages([warning, message]);
-}
-
-async function handlePlayerNotConnected(message: Message) {
-    await message.react("❌").catch();
-    const warning = await sendWarning(message, "The player is not connected to a voice channel!");
-    await deleteMessages([warning, message]);
+async function handlePlayerIdle(message: Message) {
+    await delay(60000);
+    getVoiceConnection(message.guildId!)!.destroy();
 }
 
 /**
@@ -104,7 +98,7 @@ function initConnection(message: Message) {
         else if (newStatus === VoiceConnectionStatus.Disconnected) {
             // Was manually disconnected by a user
             if (newState.reason === VoiceConnectionDisconnectReason.WebSocketClose) {
-                return connection.destroy();
+                return;
             }
 
             // Else, attempt to reconnect to the voice channel

@@ -19,9 +19,9 @@ const bot = new Client({
 
 const services = 
 [
+    ready, 
     test,
     ping, 
-    ready, 
     help, 
     channel, 
     player, 

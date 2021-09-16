@@ -44,6 +44,6 @@ export type SpotifyTrack =
     dominantColor: string
 }
 
-export type Resource = {
+export type MediaResource = {
     create(): AudioResource,
 }
