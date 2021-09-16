@@ -12,6 +12,7 @@ This was originally written in JavaScript, but I got really fed up with loose ty
 - [`ytdl-core`]
 - [`youtube-search`]
 - [`ts-node`]
+- [`spotify-url-info`]
 
 # Features
 - WIP
@@ -23,3 +24,4 @@ This was originally written in JavaScript, but I got really fed up with loose ty
 [`ts-node`]: https://www.npmjs.com/package/ts-node
 [`ytdl-core`]: https://www.npmjs.com/package/ytdl-core
 [`youtube-search`]: https://www.npm.js.com/package/youtube-search
+[`spotify-url-info`]: https://www.npmjs.com/package/spotify-url-info
