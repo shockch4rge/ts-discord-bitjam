@@ -45,5 +45,15 @@ export type SpotifyTrack =
 }
 
 export type MediaResource = {
-    create(): AudioResource,
+    create(): Promise<AudioResource | undefined>,
+}
+
+export type MediaResourceValidator = {
+    validate(url: string): Promise<boolean>;
+}
+
+export enum MediaType {
+    MP3,
+    YOUTUBE,
+    SPOTIFY,
 }

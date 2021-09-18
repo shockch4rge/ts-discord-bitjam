@@ -11,9 +11,10 @@ export async function sendWarning(message: Message, content: string) {
     return await message.channel.send({ embeds: [embed] }).catch();
 }
 
-export async function deleteMessages(messages: Message[], wait?: number) {
+export async function deleteMessages(messages: Message[], wait?: number, interval?: number) {
     await delay(wait ?? 5000);
     for (const message of messages) {
+        await delay(interval ?? 0);
         await message.delete().catch();
     }
 }

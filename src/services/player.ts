@@ -1,8 +1,9 @@
 import { createAudioPlayer, AudioPlayerStatus, getVoiceConnection, AudioPlayer } from "@discordjs/voice";
 import { Client, Message } from "discord.js";
-import { MediaResourceFactory } from "./resource";
+import { MediaResourceProcessor, MP3Processor, MP3Validator, YoutubeProcessor, YoutubeValidator } from "./resource";
 import { delay } from "../utils";
 import { MessageLevel, deleteMessages, sendMessage, handleError } from "./messaging";
+import { YouTubeSearchResults } from "youtube-search";
 
 // If starts with '>>play ', contains 'http(s)://', chars 'a-z, 0-9, @, ., /, -', & ends with '.mp3'
 const STRICT_COMMAND_PLAY = /^>>play\s(https?:\/\/[a-z0-9_@\.\/\-]+\.mp3$)/i
@@ -11,14 +12,14 @@ const COMMAND_RESUME = /^>>resume/;
 const COMMAND_PAUSE = /^>>pause/;
 
 let player: AudioPlayer;
-const resourceFactory = new MediaResourceFactory();
+const resourceFactory = new MediaResourceProcessor();
 
 export function subscribeBotEvents(bot: Client) {
     bot.on("messageCreate", async message => {
         return await handleMessageCreate(bot, message);
     });
-    bot.on("ytUrlCreate", async (url: string, message: Message) => {
-        return await handleYoutubeResource(bot, url, message);
+    bot.on("ytUrlCreate", async (result: YouTubeSearchResults, message: Message) => {
+        return await handleYoutubeResource(bot, result, message);
     });
 }
 
@@ -48,11 +49,11 @@ async function handleMessageCreate(bot: Client, message: Message) {
     }
 }
 
-async function handleYoutubeResource(bot: Client, url: string, message: Message) {
+async function handleYoutubeResource(bot: Client, result: YouTubeSearchResults, message: Message) {
     const player = initPlayer(message); 
-    const resource = resourceFactory.make(url);
+    const resource = await resourceFactory.convert(result.link, new YoutubeProcessor());
 
-    // Youtube returned an invalid link
+    // Converted an invalid link
     if (!resource) {
         return await handleError(message, "Invalid resource!", "❗")
     }
@@ -62,6 +63,17 @@ async function handleYoutubeResource(bot: Client, url: string, message: Message)
     // Allow buffer
     await delay(1000);
     player.play(resource);
+
+    const msg = await sendMessage(message, {  
+        author: "Now playing...", 
+        title: `${result.title.toString()}`,
+        url: `${result.link}`,
+        imageUrl: `${result.thumbnails.high?.url}`,
+        level: MessageLevel.PROMPT,
+    });
+
+    await deleteMessages([message], 0);
+    await deleteMessages([msg], 30000);
 }
 
 async function handlePlayCommand(bot: Client, message: Message) {
@@ -73,7 +85,7 @@ async function handlePlayCommand(bot: Client, message: Message) {
     }
 
     const url = matched[1];
-    const resource = resourceFactory.make(url);
+    const resource = await resourceFactory.convert(url, new MP3Processor());
     
     if (!resource) {
         return await handleError(message, "Invalid resource!", "❗");

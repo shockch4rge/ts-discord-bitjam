@@ -54,16 +54,5 @@ async function handleSearchCommand(bot: Client, message: Message) {
 
     const result = fetched.results[0];
     
-    bot.emit("ytUrlCreate", result.link, message);
-
-    const msg = await sendMessage(message, {  
-        author: "Now playing...", 
-        title: `${result.title.toString()}`,
-        url: `${result.link}`,
-        imageUrl: `${result.thumbnails.high?.url}`,
-        level: MessageLevel.PROMPT,
-    });
-
-    await deleteMessages([message], 0);
-    await deleteMessages([msg], 30000);
+    bot.emit("ytUrlCreate", result, message);
 }
