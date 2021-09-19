@@ -1,6 +1,6 @@
 import { createAudioPlayer, AudioPlayerStatus, getVoiceConnection, AudioPlayer } from "@discordjs/voice";
 import { Client, Message } from "discord.js";
-import { MediaResourceProcessor, MP3Processor, MP3Validator, YoutubeProcessor, YoutubeValidator } from "./resource";
+import { AudioResourceProcessor } from "./resource";
 import { delay } from "../utils";
 import { MessageLevel, deleteMessages, sendMessage, handleError } from "./messaging";
 import { YouTubeSearchResults } from "youtube-search";
@@ -12,7 +12,7 @@ const COMMAND_RESUME = /^>>resume/;
 const COMMAND_PAUSE = /^>>pause/;
 
 let player: AudioPlayer;
-const resourceFactory = new MediaResourceProcessor();
+const resourceProcessor = new AudioResourceProcessor();
 
 export function subscribeBotEvents(bot: Client) {
     bot.on("messageCreate", async message => {
@@ -51,7 +51,7 @@ async function handleMessageCreate(bot: Client, message: Message) {
 
 async function handleYoutubeResource(bot: Client, result: YouTubeSearchResults, message: Message) {
     const player = initPlayer(message); 
-    const resource = await resourceFactory.convert(result.link, new YoutubeProcessor());
+    const resource = await resourceProcessor.process(result.link);
 
     // Converted an invalid link
     if (!resource) {
@@ -85,7 +85,7 @@ async function handlePlayCommand(bot: Client, message: Message) {
     }
 
     const url = matched[1];
-    const resource = await resourceFactory.convert(url, new MP3Processor());
+    const resource = await resourceProcessor.process(url);
     
     if (!resource) {
         return await handleError(message, "Invalid resource!", "❗");
