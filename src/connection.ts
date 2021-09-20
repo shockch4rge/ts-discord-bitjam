@@ -9,7 +9,7 @@ import
 } 
 from "@discordjs/voice";
 import { createEmbed, MessageLevel, delay, } from "./utils";
-import { sendWarning } from './services/messaging';
+import { sendWarning } from './services-old/messaging';
 
 /**
  * Connects to a voice channel and initialises its listeners.

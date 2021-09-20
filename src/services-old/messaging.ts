@@ -44,7 +44,7 @@ export async function handleError(message: Message, reason: string, reaction?: E
     .setFooter(opts.footer ?? "");
 }
 
-type CreateEmbedOptions = 
+export type CreateEmbedOptions =
 {
     author?: string,
     level?: ColorResolvable,

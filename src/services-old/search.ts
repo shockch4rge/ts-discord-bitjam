@@ -1,8 +1,8 @@
 import { Client, Message } from 'discord.js';
 import { getData } from 'spotify-url-info';
 import search from 'youtube-search';
-import { formatDuration, youtubeOptions } from '../utils';
-import { MessageLevel, deleteMessages, handleError, sendMessage } from './messaging';
+import { youtubeOptions } from '../utils';
+import { handleError, } from './messaging';
 import { SpotifyTrack } from '../types';
 
 const COMMAND_SEARCH = /^>>search\s?/;
