@@ -6,3 +6,4 @@ testing.ts
 services-old/
 player.ts
 connection.ts
+.env

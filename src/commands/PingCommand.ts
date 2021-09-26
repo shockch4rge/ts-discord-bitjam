@@ -1,19 +1,14 @@
 import {Command} from "./Command";
-import {MessagingService} from "../services/MessagingService";
-import {sendMessage} from "../services-old/messaging";
 import {Client, Message} from "discord.js";
 import {PingReceiver} from "../receivers/PingReceiver";
 
-export class PingCommand implements Command {
+export default class PingCommand extends Command {
+    private readonly bot: Client
     private readonly receiver: PingReceiver;
-    private readonly service: MessagingService;
-    private readonly message: Message;
-    private readonly bot: Client;
 
-    public constructor(message: Message, bot: Client, service: MessagingService) {
-        this.message = message;
+    public constructor(message: Message, bot: Client) {
+        super(message);
         this.bot = bot;
-        this.service = service;
         this.receiver = new PingReceiver();
     }
 

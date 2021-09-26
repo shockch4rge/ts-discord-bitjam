@@ -1,18 +1,16 @@
 import {Message} from "discord.js";
-import {MessagingService} from "../services/MessagingService";
+import {deleteMessages, sendMessage} from "../services/MessagingService";
 import {Receiver} from "./Receiver";
 
 export class HelpReceiver implements Receiver {
     public readonly callables: Function[];
 
     public constructor() {
-        this.callables = [
-            this.sendHelpInfo,
-        ];
+        this.callables = [this.sendHelpInfo,];
     }
 
-    public async sendHelpInfo(message: Message, service: MessagingService) {
-        await service.send(message, {
+    public async sendHelpInfo(message: Message) {
+        await sendMessage(message, {
             author: "Commands",
             fields: [
                 { name: "`>>search <query>`", value: "Plays an MP3 file or a YouTube link.", inline: true },
@@ -30,5 +28,7 @@ export class HelpReceiver implements Receiver {
             ],
             footer: "❗ All commands listed here except for '>>ping' require you to be in a voice channel."
         });
+
+        await deleteMessages([message], 0);
     }
 }

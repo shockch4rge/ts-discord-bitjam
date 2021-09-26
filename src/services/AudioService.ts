@@ -11,14 +11,14 @@ import {Message} from "discord.js";
 import {Service} from "./Service";
 
 export class AudioService implements Service {
-    private player: AudioPlayer;
-    private connection: VoiceConnection;
+    private readonly player: AudioPlayer;
+    private readonly connection: VoiceConnection;
     private subscription: PlayerSubscription;
     public queue: Track[];
     public isLooping: boolean;
 
-    public startService(message: Message) {
-        this.connection = this.joinVc(message);
+    public constructor(connection: VoiceConnection) {
+        this.connection = connection;
         this.player = createAudioPlayer();
         this.queue = [];
         this.isLooping = false;
@@ -27,20 +27,26 @@ export class AudioService implements Service {
         this.initAudioPlayerListeners(this.player);
         this.initVoiceConnectionListeners(this.connection);
 
-        this.connection.subscribe(this.player);
-    }
-
-    public suspendService() {
-        this.clearQueue();
-        this.isLooping = false;
-        this.player.stop(true);
-        this.connection.disconnect();
-        this.subscription.unsubscribe();
-    }
-
-    public resumeService() {
-        this.connection.rejoin();
         this.subscription = this.connection.subscribe(this.player)!;
+    }
+
+    public suspendService(): Promise<void> {
+        return new Promise(resolve => {
+            this.clearQueue();
+            this.isLooping = false;
+            this.player.stop(true);
+            this.connection.disconnect();
+            this.subscription.unsubscribe();
+            resolve();
+        });
+    }
+
+    public resumeService(): Promise<void> {
+        return new Promise(resolve => {
+            this.connection.rejoin();
+            this.subscription = this.connection.subscribe(this.player)!;
+            resolve();
+        });
     }
 
     public initAudioPlayerListeners(player: AudioPlayer) {
@@ -77,8 +83,8 @@ export class AudioService implements Service {
         });
     }
 
-    public play() {
-        this.player.play(this.queue[0].create());
+    public async play() {
+        this.player.play(await this.queue[0].create());
     }
 
     public pause(): boolean {
@@ -95,10 +101,10 @@ export class AudioService implements Service {
         return false;
     }
 
-    public skip() {
-        void this.queue.shift();
-        this.player.play(this.queue[0].resource);
-    }
+    // public skip() {
+    //     void this.queue.shift();
+    //     this.player.play(this.queue[0].create());
+    // }
 
     public enqueue(track: Track) {
         void this.queue.push(track);
