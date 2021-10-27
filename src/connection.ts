@@ -8,12 +8,11 @@ import
     VoiceConnectionStatus 
 } 
 from "@discordjs/voice";
-import { createEmbed, MessageLevel, delay, } from "./utils";
-import { sendWarning } from './services/messaging';
+import { delay, } from "./utils";
+import { createEmbed, MessageLevel, sendWarning } from './services/MessagingService';
 
 /**
  * Connects to a voice channel and initialises its listeners.
- * @param player The player to establish a connection for
  * @param message The user's message to infer voice connection details from
  * @returns A {@link VoiceConnection}
  */
@@ -66,9 +65,8 @@ import { sendWarning } from './services/messaging';
                     await entersState(connection, VoiceConnectionStatus.Ready, 5000);
                     return;
                 } 
-                // Otherwise, continue to reconnect until limit is reached
                 catch {
-                    continue;
+                    // Otherwise, continue to reconnect until limit is reached
                 }
             }
 
@@ -82,7 +80,7 @@ import { sendWarning } from './services/messaging';
         else if (newStatus === VoiceConnectionStatus.Destroyed) {
             const msg = await message.channel.send({ 
                 embeds: [createEmbed({ 
-                    author: "Disconnected. Bye!", level: MessageLevel.NOTIF
+                    author: "Disconnected. Bye!", level: MessageLevel.NOTIFY
                 })] 
             });
             await delay(10000);
