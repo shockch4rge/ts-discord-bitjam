@@ -28,11 +28,10 @@ module.exports = {
             await service.pause();
         }
         catch {
-            await helper.interaction.followUp({
+            return await helper.interaction.followUp({
                 content: "The player is already paused!",
                 ephemeral: true,
             });
-            return;
         }
 
         await helper.interaction.followUp({

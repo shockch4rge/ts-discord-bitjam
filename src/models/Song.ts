@@ -1,8 +1,9 @@
 import { AudioResource, createAudioResource, demuxProbe } from "@discordjs/voice";
 import { raw as ytdl } from 'youtube-dl-exec';
+import { ApiHelper } from "../helpers/ApiHelper";
 
 export default class Song implements SongData {
-    public readonly url: string;
+    public readonly url: URL;
     public readonly title: string;
     public readonly artist: string;
     public readonly cover: string;
@@ -18,6 +19,18 @@ export default class Song implements SongData {
         this.requester = data.requester
     }
 
+    public static async from(url: string, apiHelper: ApiHelper, requester: string) {
+        const source = new URL(url);
+        return new Song({
+            url: source,
+            title: "lol",
+            requester: requester,
+            cover: "",
+            artist: "deez nuts",
+            duration: 0
+        })
+    }
+
     /**
      * Creates an AudioResource from this Song.
      */
@@ -25,14 +38,14 @@ export default class Song implements SongData {
         return new Promise((resolve, reject) => {
             // i have no idea what this does
             const process = ytdl(
-                this.url,
+                this.url.toString(),
                 {
                     o: '-',
                     q: '',
                     f: 'bestaudio[ext=webm+acodec=opus+asr=48000]/bestaudio',
                     r: '100K',
                 },
-                {stdio: ['ignore', 'pipe', 'ignore']},
+                { stdio: ['ignore', 'pipe', 'ignore'] },
             );
             if (!process.stdout) {
                 reject(new Error('No stdout'));
@@ -56,8 +69,6 @@ export default class Song implements SongData {
                 .catch(onError);
         });
     }
-
-
 
 
 
@@ -101,7 +112,7 @@ export default class Song implements SongData {
  * This is the data required to create a Song object
  */
 export interface SongData {
-    url: string,
+    url: URL,
     title: string,
     artist: string,
     cover: string,

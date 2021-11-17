@@ -32,13 +32,17 @@ export class ArrayUtils {
         void array.splice(0, array.length);
     }
 
-    public static move<T>(searchElement: T, toIndex: number, array: T[]) {
-        const index = array.indexOf(searchElement);
+    public static swap<T>(searchElement: T, _with: T, array: T[]): void {
+        void array.splice(array.indexOf(searchElement),  1, _with);
+        void array.splice(array.indexOf(_with), 1, searchElement);
+    }
 
-        if (index === -1) return;
-        if (toIndex >= array.length) return;
+    public static replace<T>(searchElement: T, _with: T, array: T[]): void {
+        array.splice(array.indexOf(searchElement), 1, _with);
+    }
 
-        array.splice(index, 1);
-        array.splice(toIndex, 0, searchElement)
+    public static move<T>(fromIndex: number, toIndex: number, array: T[]) {
+        const removed = array.splice(fromIndex, 1);
+        array.splice(toIndex, 0, ...removed)
     }
 }

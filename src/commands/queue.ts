@@ -1,7 +1,6 @@
 import { InteractionFile } from "../helpers/BotHelper";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { GuildMember, MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
-import { MessageButtonStyles } from "discord.js/typings/enums";
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -13,7 +12,7 @@ module.exports = {
 
         if (!helper.isMemberInBotVc(member)) {
             return await helper.respond(new MessageEmbed()
-                .setAuthor("❌  We must be in the same voice channel to use this command!")
+                .setAuthor("❌  You must be in the bot's voice channel to use this command!")
                 .setColor("RED"));
         }
 
@@ -49,11 +48,11 @@ module.exports = {
                     new MessageButton()
                         .setCustomId("next_page")
                         .setLabel("Next Page")
-                        .setStyle(MessageButtonStyles.PRIMARY),
+                        .setStyle("PRIMARY"),
                     new MessageButton()
                         .setCustomId("back_page")
                         .setLabel("Previous Page")
-                        .setStyle(MessageButtonStyles.PRIMARY)
+                        .setStyle("PRIMARY")
                 ])],
         });
     }

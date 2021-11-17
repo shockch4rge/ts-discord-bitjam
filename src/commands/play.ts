@@ -3,6 +3,7 @@ import { SlashCommandBuilder } from "@discordjs/builders";
 import { GuildMember, MessageEmbed } from "discord.js";
 import { DiscordGatewayAdapterCreator, joinVoiceChannel } from "@discordjs/voice";
 import MusicService from "../services/MusicService";
+import Song from "../models/Song";
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -36,8 +37,10 @@ module.exports = {
         const service = helper.cache.service;
         const url = helper.getInteractionString("url")!;
 
+        const song = await Song.from(url, helper.cache.apiHelper, member.displayName);
+
         try {
-            await service.play(url);
+            await service.play(song);
         }
         catch {
 
