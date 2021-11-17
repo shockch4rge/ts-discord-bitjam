@@ -4,7 +4,7 @@ import admin, { firestore } from "firebase-admin";
 import CollectionReference = firestore.CollectionReference;
 import DocumentData = firestore.DocumentData;
 
-const auth = require("../auth.json");
+const auth = require("../../auth.json");
 
 export default class BotCache {
     private readonly db: FirebaseFirestore.Firestore;
@@ -19,7 +19,7 @@ export default class BotCache {
 
         this.bot = bot;
         this.guildCaches = new Collection<string, GuildCache>();
-        this.guildRefs = this.db.collection("guilds");
+        this.guildRefs = this.db.collection(auth.firebase.collection);
     }
 
     public async getGuildCache(guild: Guild) {
@@ -37,7 +37,6 @@ export default class BotCache {
         const snap = await guildRef.get();
 
         if (!snap.exists) {
-            // create the guild doc
             await guildRef.create({});
         }
 

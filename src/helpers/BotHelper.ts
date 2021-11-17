@@ -59,7 +59,6 @@ export default class BotHelper {
                 catch (err) {
                     // @ts-ignore
                     console.error(`❌  Failed to deploy commands in ${guild.name}: ${err.message}`);
-                    await guild.leave();
                     continue;
                 }
 
