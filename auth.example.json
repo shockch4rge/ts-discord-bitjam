@@ -1,0 +1,10 @@
+{
+    "bot_token": "Your client's token",
+    "app_id": "Your app's ID",
+    "yt_token": "Your Youtube API key",
+    "firebase": {
+        "service_account": {
+            "example": "Your service account details. Should be provided in JSON format by Firebase"
+        }
+    }
+}
