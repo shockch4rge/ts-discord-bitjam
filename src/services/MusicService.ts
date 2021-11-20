@@ -37,21 +37,9 @@ export default class MusicService {
 
         this.player.on(AudioPlayerStatus.Idle, async oldState => {
             if (oldState.status === AudioPlayerStatus.Playing) {
-                switch (this.looping) {
-                    case LoopState.OFF:
-                        this.queue.shift();
-                        break;
-
-                    case LoopState.SONG:
-                        await this.play(this.queue[0]);
-                        break;
-
-                    case LoopState.QUEUE:
-                        this.enqueue(this.queue[0]);
-                        this.queue.shift();
-                        break;
-                }
+                await this.skip();
             }
+
         });
     }
 
@@ -72,18 +60,26 @@ export default class MusicService {
             catch {
 
             }
-        })
+        });
     }
 
     public play(song: Song): Promise<void> {
         return new Promise((resolve, reject) => {
-            this.prepend(song);
-            this.queue[0]
-                .createAudioResource()
-                .then(resource => this.player.play(resource))
-                .catch(() => {
-                    reject("Failed to create resource.");
-                });
+            this.queue.push(song);
+
+            if (this.player.state.status !== AudioPlayerStatus.Playing) {
+                this.queue[0]
+                    .createAudioResource()
+                    .then(resource => {
+                        this.player.play(resource);
+                    })
+                    .catch(() => {
+                        reject("Failed to create audio resource.");
+                    });
+            }
+            else {
+                reject("Appended the song to the queue!");
+            }
 
             resolve();
         });
@@ -138,14 +134,6 @@ export default class MusicService {
         }
     }
 
-    public prepend(song: Song) {
-        this.queue.unshift(song);
-    }
-
-    public enqueue(song: Song) {
-        this.queue.push(song);
-    }
-
     public moveSong(atIndex: number, toIndex: number): Promise<void> {
         return new Promise((resolve, reject) => {
             if (atIndex < 0 || toIndex >= this.queue.length) {
@@ -177,34 +165,38 @@ export default class MusicService {
     public skip(): Promise<void> {
         return new Promise((resolve, reject) => {
             // get the next song first. If it doesn't exist, we've reached the end of the queue
-            const song = this.queue.at(1);
+            if (!this.queue.at(1)) {
+                this.player.stop();
+                reject("Reached the end of the queue!");
+            }
 
             this.queue.shift();
 
-            if (!song) {
-                this.player.stop();
-                return;
-            }
-
-            try {
-                this.play(song)
-                    .then(resolve);
-            }
-            catch (e) {
-                reject(e);
-            }
+            this.queue[0].createAudioResource()
+                .then(resource => {
+                    this.player.play(resource);
+                    resolve();
+                })
+                .catch(reject);
         });
     }
 
-    public swap(indexOne: number, indexTwo: number) {
+    public stop(): Promise<void> {
         return new Promise((resolve, reject) => {
-            if (indexOne >= this.queue.length || indexTwo >= this.queue.length) {
-                reject(`Invalid indexes! Provided (${indexOne}), (${indexTwo}).`);
+            if (this.player.state.status === AudioPlayerStatus.Idle) {
+                reject("The bot isn't playing any music!");
             }
 
-            ArrayUtils.swap(this.queue[indexOne], this.queue[indexTwo], this.queue);
-        });
+            const stopSuccess = this.player.stop();
+
+            if (!stopSuccess) {
+                reject("There was an error stopping the player.");
+            }
+
+            resolve();
+        })
     }
+
 }
 
 export enum LoopState {
