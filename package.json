@@ -4,7 +4,7 @@
   "description": "A generic music bot for Discord",
   "main": "app.ts",
   "scripts": {
-    "start": "ts-node ./src/app.ts",
+    "start": "cd src ts-node app.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
