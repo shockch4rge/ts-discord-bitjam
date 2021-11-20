@@ -3,32 +3,37 @@ import { raw as ytdl } from 'youtube-dl-exec';
 import { ApiHelper } from "../helpers/ApiHelper";
 
 export default class Song implements SongData {
-    public readonly url: URL;
     public readonly title: string;
     public readonly artist: string;
+    public readonly url: string;
     public readonly cover: string;
-    public readonly duration: number;
+    public readonly duration: ms;
     public readonly requester: string;
 
-    private constructor(data: SongData) {
-        this.url = data.url;
+    public constructor(data: SongData) {
         this.title = data.title;
         this.artist = data.artist;
+        this.url = data.url;
         this.cover = data.cover;
-        this.duration = data.duration
-        this.requester = data.requester
+        this.duration = data.duration;
+        this.requester = data.requester;
     }
 
-    public static async from(url: string, apiHelper: ApiHelper, requester: string) {
-        const source = new URL(url);
+    public static async from(_url: string, apiHelper: ApiHelper, requester: string) {
+        const url = new URL(_url);
+
+        if (url.hostname === "open.spotify.com") {
+            return await apiHelper.getSpotifySong(url.pathname.slice(7), requester);
+        }
+
         return new Song({
-            url: source,
-            title: "lol",
+            title: "Lorem Ipsum",
+            artist: "Lorem Ipsum",
+            url: "",
+            cover: "https://i.ytimg.com/vi/uzP7EHVSNsQ/hq720.jpg?sqp=-oaymwEXCNAFEJQDSFryq4qpAwkIARUAAIhCGAE=&rs=AOn4CLCWDy1hiAmJLHesM4DdcDgxrskCSQ",
+            duration: 240000,
             requester: requester,
-            cover: "",
-            artist: "deez nuts",
-            duration: 0
-        })
+        });
     }
 
     /**
@@ -71,7 +76,6 @@ export default class Song implements SongData {
     }
 
 
-
     // /**
     //  * Creates a Song from a video URL and lifecycle callback methods.
     //  *
@@ -112,10 +116,12 @@ export default class Song implements SongData {
  * This is the data required to create a Song object
  */
 export interface SongData {
-    url: URL,
+    url: string,
     title: string,
     artist: string,
     cover: string,
-    duration: number,
+    duration: ms,
     requester: string,
 }
+
+export type ms = number;
