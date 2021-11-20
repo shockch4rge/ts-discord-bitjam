@@ -25,6 +25,8 @@ module.exports = {
                 .setColor("RED"));
         }
 
+        service.toggleLoop();
+
         let stateString = "";
 
         switch (service.looping) {
@@ -39,9 +41,9 @@ module.exports = {
                 break;
         }
 
-        return await helper.respond(new MessageEmbed()
+        await helper.respond(new MessageEmbed()
             .setAuthor(`✅  ${stateString}`)
-            .setColor("RED"))
+            .setColor("GREEN"))
     }
 
 } as InteractionFile;

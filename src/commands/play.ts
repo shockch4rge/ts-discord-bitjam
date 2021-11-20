@@ -41,6 +41,10 @@ module.exports = {
                 .setAuthor(`❌  ${e}`)
                 .setColor("RED"));
         }
+
+        await helper.respond(new MessageEmbed()
+            .setAuthor("✅  Playing...")
+            .setColor("GREEN"));
     }
 
 } as InteractionFile;

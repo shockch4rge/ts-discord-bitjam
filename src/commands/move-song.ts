@@ -6,16 +6,14 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName("move")
         .setDescription("Move a song at an index to another one.")
-        .addIntegerOption(option =>
-            option
-                .setName("from-index")
-                .setDescription("The index of the song to move. (min = 0)")
-                .setRequired(true))
-        .addIntegerOption(option =>
-            option
-                .setName("to-index")
-                .setDescription("Move the song to this index. (max = queue length - 1)")
-                .setRequired(true)),
+        .addIntegerOption(option => option
+            .setName("at-index")
+            .setDescription("The index of the song to move. (min = 0)")
+            .setRequired(true))
+        .addIntegerOption(option => option
+            .setName("to-index")
+            .setDescription("Move the song to this index. (max = queue length - 1)")
+            .setRequired(true)),
 
     execute: async helper => {
         const member = helper.interaction.member as GuildMember;
@@ -34,16 +32,20 @@ module.exports = {
                 .setColor("RED"));
         }
 
-        const fromIndex = helper.getInteractionInteger("from-index")!;
+        const atIndex = helper.getInteractionInteger("at-index")!;
         const toIndex = helper.getInteractionInteger("to-index")!;
 
         try {
-            await service.moveSong(fromIndex, toIndex);
+            await service.moveSong(atIndex, toIndex);
         }
         catch (e) {
             return await helper.respond(new MessageEmbed()
                 .setAuthor(`❌  ${e}`)
                 .setColor("RED"));
         }
+
+        await helper.respond(new MessageEmbed()
+            .setAuthor(`✅  Moved song at index ${"`"+atIndex+"`"} to ${"`"+toIndex+"`"}`)
+            .setColor("GREEN"));
     }
 } as InteractionFile;
