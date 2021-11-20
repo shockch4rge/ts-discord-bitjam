@@ -27,19 +27,15 @@ module.exports = {
         try {
             await service.pause();
         }
-        catch {
-            return await helper.interaction.followUp({
-                content: "The player is already paused!",
-                ephemeral: true,
-            });
+        catch (e) {
+            return await helper.respond(new MessageEmbed()
+                .setAuthor(`❌  ${e}`)
+                .setColor("RED"))
         }
 
-        await helper.interaction.followUp({
-            embeds: [new MessageEmbed()
-                .setTitle("✅  Paused")
-                .setColor("GREEN")],
-            ephemeral: true,
-        });
+        await helper.respond(new MessageEmbed()
+            .setAuthor("✅  Music paused.")
+            .setColor("GREEN"));
 
     }
 } as InteractionFile;

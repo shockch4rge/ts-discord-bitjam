@@ -27,9 +27,9 @@ module.exports = {
         try {
             await service.resume();
         }
-        catch {
-            await helper.respond(new MessageEmbed()
-                .setTitle("❌  The bot is already playing!")
+        catch (e) {
+            return await helper.respond(new MessageEmbed()
+                .setTitle(`❌  ${e}`)
                 .setColor("RED"));
         }
     }

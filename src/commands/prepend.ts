@@ -7,11 +7,10 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName("prepend")
         .setDescription("Prepends a song to the beginning of the queue.")
-        .addStringOption(option =>
-            option
-                .setName("url")
-                .setDescription("The URL of the song. Can be a Spotify or Youtube link.")
-                .setRequired(true)),
+        .addStringOption(option => option
+            .setName("url")
+            .setDescription("The song's URL. Can be a Spotify or Youtube link.")
+            .setRequired(true)),
 
     execute: async helper => {
         const member = helper.interaction.member as GuildMember;

@@ -38,11 +38,12 @@ module.exports = {
         const toIndex = helper.getInteractionInteger("to-index")!;
 
         try {
-            await service.move(fromIndex, toIndex);
+            await service.moveSong(fromIndex, toIndex);
         }
-        catch {
+        catch (e) {
             return await helper.respond(new MessageEmbed()
-                .setAuthor("❌  There was a problem moving songs. Check the indexing?"));
+                .setAuthor(`❌  ${e}`)
+                .setColor("RED"));
         }
     }
 } as InteractionFile;

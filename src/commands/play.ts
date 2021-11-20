@@ -9,20 +9,14 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName("play")
         .setDescription("Play a song with a given url.")
-        .addStringOption(option =>
-            option
-                .setName("url")
-                .setRequired(true)
+        .addStringOption(option => option
+            .setName("url")
+            .setDescription("The song's URL. Can be a Spotify or Youtube link.")
+            .setRequired(true)
         ),
 
     execute: async helper => {
         const member = helper.interaction.member as GuildMember;
-
-        if (!helper.isMemberInBotVc(member)) {
-            return await helper.respond(new MessageEmbed()
-                .setAuthor("❌  We must be in the same voice channel to use this command!")
-                .setColor("RED"));
-        }
 
         if (!helper.cache.service) {
             const connection = joinVoiceChannel({
@@ -42,8 +36,10 @@ module.exports = {
         try {
             await service.play(song);
         }
-        catch {
-
+        catch (e) {
+            return await helper.respond(new MessageEmbed()
+                .setAuthor(`❌  ${e}`)
+                .setColor("RED"));
         }
     }
 

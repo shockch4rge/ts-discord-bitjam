@@ -32,9 +32,14 @@ module.exports = {
                 .setColor("RED"));
         }
 
-        queue.shift();
-        const resource = await queue[0].createAudioResource();
-        service.player.play(resource);
+        try {
+            await service.skip();
+        }
+        catch (e) {
+            return await helper.respond(new MessageEmbed()
+                .setAuthor(`❌  ${e}`)
+                .setColor("RED"));
+        }
     }
 
 } as InteractionFile;
