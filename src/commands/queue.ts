@@ -1,15 +1,12 @@
 import { InteractionFile } from "../helpers/BotHelper";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { GuildMember, MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
+import { formatTime } from "../utilities/Utils";
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("queue")
-        .setDescription("View the current queue.")
-        .addIntegerOption(option => option
-            .setName("page-number")
-            .setDescription("Navigate to a page in the queue.")
-            .setRequired(false)),
+        .setDescription("View the current queue."),
 
     execute: async helper => {
         const member = helper.interaction.member as GuildMember;
@@ -28,26 +25,29 @@ module.exports = {
                 .setColor("RED"));
         }
 
-        // may be null
-        const page = helper.getInteractionInteger("page-number");
-
         const queue = service.queue;
         const embed = new MessageEmbed();
+        const numbers = ["0️⃣", "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"];
 
+        embed.addField("___", "...");
 
-        let i = 0;
-        for (i; i < queue.length; i++) {
+        // append the rows top down from highest
+        for (let i = queue.length - 1; i >= 0; i--) {
             // append up to 10 fields
-            if (i >= 10) break;
+            if (i <= queue.length - 10) break;
 
             const song = queue[i];
-            embed.addField(`${i}. ${song.title} -> ${song.duration}`, `${song.artist}`);
+            embed.addField(
+                `> ${numbers[i]} :   ${song.title} - ${song.artist}`,
+                `Duration: ${formatTime(song.duration)}`
+            );
         }
 
         embed
-            .setAuthor(`Queue Size: ${queue.length} songs`, helper.cache.bot.user!.avatarURL()!)
             .setTitle(`Current song: ${queue[0].title}`)
-            .setFooter(i <= 0 ? "" : `And ${queue.length - i} songs left...`)
+            .setImage(queue[0].cover)
+            .setFooter(`🗃️ There are ${queue.length} ${queue.length === 1 ? "song" : "songs"} in the queue.`)
+            .setColor("GREYPLE");
 
         await helper.interaction.followUp({
             embeds: [embed],
