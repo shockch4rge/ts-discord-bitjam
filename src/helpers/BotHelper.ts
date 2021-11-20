@@ -46,7 +46,6 @@ export default class BotHelper {
                 catch (err) {
                     // @ts-ignore
                     console.error(`❌  Couldn't find ${guild.name}`);
-                    await guild.leave();
                     continue;
                 }
 
@@ -86,7 +85,7 @@ export default class BotHelper {
 
             // Slash command
             if (interaction.isCommand()) {
-                await interaction.deferReply();
+                await interaction.deferReply({ ephemeral: true });
                 const interactionFile = this.interactionFiles.get(interaction.commandName);
                 if (!interactionFile) return;
 
@@ -123,6 +122,10 @@ export default class BotHelper {
                 }
             }
         });
+
+        this.bot.on("voiceStateUpdate", async (oldState, newState) => {
+
+        })
 
         // guildCreate
         this.bot.on("guildCreate", async guild => {
