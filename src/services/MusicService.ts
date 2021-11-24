@@ -72,6 +72,7 @@ export default class MusicService {
 
                     if (this.queue.length !== 0) {
                         await this.play(this.queue[0]);
+                        new Date()
                     }
                     break;
 
@@ -103,10 +104,9 @@ export default class MusicService {
 
     public play(song: Song): Promise<void> {
         return new Promise((resolve, reject) => {
+            this.queue.push(song)
 
             if (this.player.state.status === AudioPlayerStatus.Playing) {
-                // append the song instead
-                this.queue.push(song)
                 reject("Appended the song to the queue!");
                 return;
             }
@@ -225,6 +225,7 @@ export default class MusicService {
                 reject("The bot isn't playing any music!");
             }
 
+            Arrays.clear(this.queue);
             const stopSuccess = this.player.stop();
 
             if (!stopSuccess) {

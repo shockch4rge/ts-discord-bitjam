@@ -40,6 +40,10 @@ module.exports = {
                 .setAuthor(`❌  ${e}`)
                 .setColor("RED"));
         }
+
+        return await helper.respond(new MessageEmbed()
+            .setAuthor("✔️  Skipped!")
+            .setColor("GREEN"));
     }
 
 } as InteractionFile;

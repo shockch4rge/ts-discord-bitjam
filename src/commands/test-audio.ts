@@ -40,7 +40,7 @@ module.exports = {
         }
 
         await helper.respond(new MessageEmbed()
-            .setAuthor("✅  Playing...")
+            .setAuthor("✔️  Playing...")
             .setColor("GREEN"));
     }
 

@@ -12,9 +12,30 @@ module.exports = {
 
         if (!helper.isMemberInBotVc(member)) {
             return await helper.respond(new MessageEmbed()
-                .setAuthor("❌  You must be in bot's voice channel to use this command!")
-                .setColor("RED"))
+                .setTitle("❌  We must be in the same voice channel to use this command!")
+                .setColor("RED"));
         }
+
+        const service = helper.cache.service;
+
+        if (!service) {
+            return await helper.respond(new MessageEmbed()
+                .setAuthor("❌  I am not currently in a voice channel!")
+                .setColor("RED"));
+        }
+
+        try {
+            await service.shuffle();
+        }
+        catch (e) {
+            return await helper.respond(new MessageEmbed()
+                .setAuthor(`❌  ${e}`)
+                .setColor("RED"));
+        }
+
+        return await helper.respond(new MessageEmbed()
+            .setAuthor("✔️  Shuffled the queue!")
+            .setColor("GREEN"));
     }
 
 } as InteractionFile;

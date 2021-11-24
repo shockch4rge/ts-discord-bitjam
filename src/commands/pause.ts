@@ -34,7 +34,7 @@ module.exports = {
         }
 
         await helper.respond(new MessageEmbed()
-            .setAuthor("✅  Music paused.")
+            .setAuthor("✔️  Paused.")
             .setColor("GREEN"));
 
     }

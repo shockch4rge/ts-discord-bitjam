@@ -44,8 +44,8 @@ module.exports = {
                 .setColor("RED"));
         }
 
-        await helper.respond(new MessageEmbed()
-            .setAuthor(`✅  Moved song at index ${"`"+atIndex+"`"} to ${"`"+toIndex+"`"}`)
+        return await helper.respond(new MessageEmbed()
+            .setAuthor(`✔️  Moved song at index ${"`"+atIndex+"`"} to ${"`"+toIndex+"`"}`)
             .setColor("GREEN"));
     }
 } as InteractionFile;

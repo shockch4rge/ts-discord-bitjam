@@ -42,7 +42,7 @@ module.exports = {
         }
 
         await helper.respond(new MessageEmbed()
-            .setAuthor(`✅  ${stateString}`)
+            .setAuthor(`✔️  ${stateString}`)
             .setColor("GREEN"))
     }
 

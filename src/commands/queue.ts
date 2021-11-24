@@ -50,12 +50,12 @@ module.exports = {
 
         embed
             .setAuthor(`🎵  Current song:`)
-            .setTitle(`[${currentSong.duration}] - ${currentSong.title} :: ${currentSong.artist}`)
+            .setTitle(`[${formatTime(currentSong.duration)}] - ${currentSong.title} :: ${currentSong.artist}`)
             .setImage(currentSong.cover)
             .setFooter(`🗃️ There ${queue.length === 1 ? "is 1 song" : `are ${queue.length} songs`} in the queue.`)
             .setColor("GREYPLE");
 
-        await helper.interaction.followUp({
+        return await helper.interaction.followUp({
             embeds: [embed],
             components: [new MessageActionRow()
                 .addComponents([

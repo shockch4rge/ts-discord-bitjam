@@ -33,7 +33,7 @@ module.exports = {
         }
 
         await helper.respond(new MessageEmbed()
-            .setAuthor("✅  Cleared queue and stopped the player.")
+            .setAuthor("✔️  Cleared queue and stopped the player.")
             .setColor("GREEN"));
     }
 
