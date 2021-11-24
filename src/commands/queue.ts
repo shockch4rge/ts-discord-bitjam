@@ -25,11 +25,16 @@ module.exports = {
                 .setColor("RED"));
         }
 
+        if (service.queue.length === 0) {
+            return await helper.respond(new MessageEmbed()
+                .setAuthor("❗  The queue is empty!")
+                .setColor("GOLD"));
+        }
+
         const queue = service.queue;
         const embed = new MessageEmbed();
-        const numbers = ["0️⃣", "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"];
-
-        embed.addField("___", "...");
+        const currentSong = queue[0];
+        const numbers = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
 
         // append the rows top down from highest
         for (let i = queue.length - 1; i >= 0; i--) {
@@ -38,15 +43,16 @@ module.exports = {
 
             const song = queue[i];
             embed.addField(
-                `> ${numbers[i]} :   ${song.title} - ${song.artist}`,
+                `> ${numbers[i]} :   ${song.title} :: ${song.artist}`,
                 `Duration: ${formatTime(song.duration)}`
             );
         }
 
         embed
-            .setTitle(`Current song: ${queue[0].title}`)
-            .setImage(queue[0].cover)
-            .setFooter(`🗃️ There are ${queue.length} ${queue.length === 1 ? "song" : "songs"} in the queue.`)
+            .setAuthor(`🎵  Current song:`)
+            .setTitle(`[${currentSong.duration}] - ${currentSong.title} :: ${currentSong.artist}`)
+            .setImage(currentSong.cover)
+            .setFooter(`🗃️ There ${queue.length === 1 ? "is 1 song" : `are ${queue.length} songs`} in the queue.`)
             .setColor("GREYPLE");
 
         await helper.interaction.followUp({
