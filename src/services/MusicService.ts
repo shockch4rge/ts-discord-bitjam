@@ -4,18 +4,22 @@ import {
     createAudioPlayer,
     entersState,
     VoiceConnection,
+    VoiceConnectionDisconnectReason,
     VoiceConnectionStatus
 } from "@discordjs/voice";
 import Song from "../models/Song";
-import { ArrayUtils } from "../utilities/ArrayUtils";
+import { Arrays } from "../utilities/Arrays";
+import GuildCache from "../db/GuildCache";
 
 export default class MusicService {
+    private readonly cache: GuildCache
     public readonly connection: VoiceConnection;
     public readonly player: AudioPlayer;
     public looping: LoopState;
     public queue: Song[];
 
-    public constructor(connection: VoiceConnection) {
+    public constructor(connection: VoiceConnection, cache: GuildCache) {
+        this.cache = cache;
         this.connection = connection;
         this.player = createAudioPlayer();
         this.connection.subscribe(this.player);
@@ -24,6 +28,30 @@ export default class MusicService {
 
         this.setupPlayerListeners();
         this.setupConnectionListeners();
+    }
+
+    private setupConnectionListeners() {
+        this.connection.on(VoiceConnectionStatus.Ready, async oldState => {
+
+        });
+
+        this.connection.on(VoiceConnectionStatus.Destroyed, async oldState => {
+
+        });
+
+        this.connection.on(VoiceConnectionStatus.Disconnected, async (oldState, newState) => {
+            if (newState.reason === VoiceConnectionDisconnectReason.WebSocketClose &&
+                newState.closeCode === 4014) {
+                return;
+            }
+
+            try {
+                await entersState(this.connection, VoiceConnectionStatus.Connecting, 10000);
+            }
+            catch {
+
+            }
+        });
     }
 
     private setupPlayerListeners() {
@@ -36,52 +64,62 @@ export default class MusicService {
         });
 
         this.player.on(AudioPlayerStatus.Idle, async oldState => {
-            if (oldState.status === AudioPlayerStatus.Playing) {
-                await this.skip();
+            if (oldState.status === AudioPlayerStatus.Idle) return;
+
+            switch (this.looping) {
+                case LoopState.OFF:
+                    this.queue.shift();
+
+                    if (this.queue.length !== 0) {
+                        await this.play(this.queue[0]);
+                    }
+                    break;
+
+                case LoopState.SONG:
+                    // replay the current song
+                    await this.play(this.queue[0]);
+                    break;
+
+                case LoopState.QUEUE:
+                    const song = this.queue.shift();
+
+                    if (song && this.queue.length !== 0) {
+                        // relocate first song to the back of the queue
+                        this.queue.push(song);
+                        await this.play(this.queue[0]);
+                    }
+                    break;
             }
+
 
         });
     }
 
-    private setupConnectionListeners() {
-        this.connection.on(VoiceConnectionStatus.Ready, async oldState => {
-
-        });
-
-        this.connection.on(VoiceConnectionStatus.Destroyed, async oldState => {
-
-        });
-
-        this.connection.on(VoiceConnectionStatus.Disconnected, async oldState => {
-            try {
-                this.connection.rejoin();
-                await entersState(this.connection, VoiceConnectionStatus.Ready, 10000);
-            }
-            catch {
-
-            }
-        });
+    public dequeue(fromIndex: number, toIndex: number) {
+        for (let i = fromIndex; i <= toIndex; i++) {
+            Arrays.remove(this.queue[i], this.queue);
+        }
     }
 
     public play(song: Song): Promise<void> {
         return new Promise((resolve, reject) => {
-            this.queue.push(song);
 
-            if (this.player.state.status !== AudioPlayerStatus.Playing) {
-                this.queue[0]
-                    .createAudioResource()
-                    .then(resource => {
-                        this.player.play(resource);
-                    })
-                    .catch(() => {
-                        reject("Failed to create audio resource.");
-                    });
-            }
-            else {
+            if (this.player.state.status === AudioPlayerStatus.Playing) {
+                // append the song instead
+                this.queue.push(song)
                 reject("Appended the song to the queue!");
+                return;
             }
 
-            resolve();
+            song.createAudioResource()
+                .then(resource => {
+                    this.player.play(resource);
+                    resolve();
+                })
+                .catch(() => {
+                    reject("Failed to create audio resource.");
+                });
+
         });
     }
 
@@ -113,7 +151,7 @@ export default class MusicService {
                 reject("There are no songs in the queue.");
             }
 
-            ArrayUtils.shuffle(this.queue);
+            Arrays.shuffle(this.queue);
             resolve();
         });
     }
@@ -140,7 +178,7 @@ export default class MusicService {
                 reject(`Invalid index! Provided (${atIndex}) and (${toIndex})`);
             }
 
-            ArrayUtils.move(atIndex, toIndex, this.queue);
+            Arrays.move(atIndex, toIndex, this.queue);
             resolve();
         });
     }
@@ -157,7 +195,7 @@ export default class MusicService {
                 reject(`Song not found at index (${index}).`);
             }
 
-            ArrayUtils.remove(song, this.queue);
+            Arrays.remove(song, this.queue);
             resolve();
         });
     }
