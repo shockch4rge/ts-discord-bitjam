@@ -21,24 +21,24 @@ module.exports = {
         if (!helper.cache.service) {
             const connection = joinVoiceChannel({
                 guildId: member.guild.id,
-                channelId: member.voice.channelId!,
+                 channelId: member.voice.channelId!,
                 adapterCreator: member.guild.voiceAdapterCreator as DiscordGatewayAdapterCreator,
             });
 
-            helper.cache.service = new MusicService(connection);
+            helper.cache.service = new MusicService(connection, helper.cache);
         }
 
         const service = helper.cache.service;
         const url = helper.getInteractionString("url")!;
 
-        const song = await Song.from(url, helper.cache.apiHelper, member.displayName);
-
         try {
+            const song = await Song.from(url, helper.cache.apiHelper, member.displayName);
             await service.play(song);
         }
         catch (e) {
             return await helper.respond(new MessageEmbed()
-                .setAuthor(`❌  ${e}`)
+            // @ts-ignore
+                .setAuthor(`❌  ${e.msg ?? e}`)
                 .setColor("RED"));
         }
 
@@ -46,5 +46,4 @@ module.exports = {
             .setAuthor("✅  Playing...")
             .setColor("GREEN"));
     }
-
 } as InteractionFile;
