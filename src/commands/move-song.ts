@@ -32,7 +32,7 @@ module.exports = {
                 .setColor("RED"));
         }
 
-        const atIndex = helper.getInteractionInteger("at-index")!;
+        const atIndex = helper.getInteractionInteger("at-index")! - 1;
         const toIndex = helper.getInteractionInteger("to-index")!;
 
         try {
