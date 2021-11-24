@@ -22,7 +22,7 @@ module.exports = {
                 adapterCreator: member.guild.voiceAdapterCreator as DiscordGatewayAdapterCreator,
             });
 
-            helper.cache.service = new MusicService(connection);
+            helper.cache.service = new MusicService(connection, helper.cache);
         }
 
         const service = helper.cache.service;

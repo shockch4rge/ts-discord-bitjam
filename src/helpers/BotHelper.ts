@@ -26,8 +26,8 @@ export default class BotHelper {
     }
 
     public setup() {
-        this.setupInteractionCommands();
-        this.setupButtonCommands();
+        this.setupCommandInteractions();
+        this.setupButtonInteractions();
         this.setupBotEvents();
     }
 
@@ -141,7 +141,7 @@ export default class BotHelper {
         })
     }
 
-    private setupInteractionCommands() {
+    private setupCommandInteractions() {
         let fileNames: string[];
 
         try {
@@ -160,7 +160,7 @@ export default class BotHelper {
         }
     }
 
-    private setupButtonCommands() {
+    private setupButtonInteractions() {
         let fileNames: string[];
 
         try {
