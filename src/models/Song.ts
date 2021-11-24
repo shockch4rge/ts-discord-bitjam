@@ -7,7 +7,7 @@ export default class Song implements SongData {
     public readonly artist: string;
     public readonly url: string;
     public readonly cover: string;
-    public readonly duration: ms;
+    public readonly duration: number;
     public readonly requester: string;
 
     public constructor(data: SongData) {
@@ -19,20 +19,32 @@ export default class Song implements SongData {
         this.requester = data.requester;
     }
 
-    public static async from(_url: string, apiHelper: ApiHelper, requester: string) {
-        const url = new URL(_url);
+    public static from(_url: string, apiHelper: ApiHelper, requester: string): Promise<Song> {
+        return new Promise((resolve, reject) => {
+            const url = new URL(_url);
 
-        if (url.hostname === "open.spotify.com") {
-            return await apiHelper.getSpotifySong(url.pathname.slice(7), requester);
-        }
+            switch (url.hostname) {
+                case "open.spotify.com":
+                    // https://open.spotify.com/track/[trackId]?si=[something]
+                    return apiHelper.getSpotifySong(url.pathname.slice(7), requester)
+                        .then(resolve)
+                        .catch(reject);
 
-        return new Song({
-            title: "Lorem Ipsum",
-            artist: "Lorem Ipsum",
-            url: "",
-            cover: "https://i.ytimg.com/vi/uzP7EHVSNsQ/hq720.jpg?sqp=-oaymwEXCNAFEJQDSFryq4qpAwkIARUAAIhCGAE=&rs=AOn4CLCWDy1hiAmJLHesM4DdcDgxrskCSQ",
-            duration: 240000,
-            requester: requester,
+                case "www.youtube.com":
+                    // https://www.youtube.com/watch?v=[videoId]
+                    return apiHelper.getYoutubeSong(url.searchParams.get("v")!, requester)
+                        .then(resolve)
+                        .catch(reject);
+
+                case "youtu.be":
+                    // https://youtu.be/[videoId]
+                    return apiHelper.getYoutubeSong(url.pathname.slice(1), requester)
+                        .then(resolve)
+                        .catch(reject);
+
+                default:
+                    reject("Provide a Youtube or Spotify link!");
+            }
         });
     }
 
@@ -43,7 +55,7 @@ export default class Song implements SongData {
         return new Promise((resolve, reject) => {
             // i have no idea what this does
             const process = ytdl(
-                this.url.toString(),
+                this.url,
                 {
                     o: '-',
                     q: '',
@@ -73,6 +85,17 @@ export default class Song implements SongData {
                 })
                 .catch(onError);
         });
+    }
+
+    public static getDefault() {
+        return new Song({
+            title: "Default",
+            artist: "Default",
+            url: "gg.com",
+            cover: "https://i.ytimg.com/vi/uzP7EHVSNsQ/hq720.jpg?sqp=-oaymwEXCNAFEJQDSFryq4qpAwkIARUAAIhCGAE=&rs=AOn4CLCWDy1hiAmJLHesM4DdcDgxrskCSQ",
+            requester: "Requester",
+            duration: 123456
+        })
     }
 
 
@@ -120,8 +143,6 @@ export interface SongData {
     title: string,
     artist: string,
     cover: string,
-    duration: ms,
+    duration: number,
     requester: string,
 }
-
-export type ms = number;
