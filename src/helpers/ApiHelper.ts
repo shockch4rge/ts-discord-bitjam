@@ -6,57 +6,83 @@ const auth = require("../../auth.json");
 
 export class ApiHelper {
     private readonly spotifyApi: SpotifyWebApi;
+    private readonly youtubeMusicApi: any;
 
     public constructor() {
         this.spotifyApi = new SpotifyWebApi(auth.spotify);
         this.spotifyApi.setAccessToken(auth.spotify.accessToken);
+        this.youtubeMusicApi = new (require("youtube-music-api"))();
+        this.youtubeMusicApi.initalize();
     }
 
-    public async getYoutubeSong(url: string, requester: string) {
-        if (ytdl.validateURL(url)) {
-            const info = (await ytdl.getBasicInfo(url)).videoDetails;
+    public async getYoutubeSong(id: string, requester: string) {
+        let info = null;
 
-            return new Song({
-                url: info.video_url,
-                artist: info.author.name,
-                title: info.title,
-                cover: info.thumbnails[0].url,
-                duration: +info.lengthSeconds * 1000,
-                requester: requester,
-            });
+        try {
+            info = (await ytdl.getBasicInfo(id)).videoDetails;
         }
+        catch {
+            throw new Error(`Invalid link! No such video ID found: ${id}`);
+        }
+
+        return new Song({
+            title: info.title,
+            artist: info.author.name,
+            url: `https://youtu.be/${info.videoId}`,
+            cover: info.thumbnails[0].url,
+            duration: +info.lengthSeconds * 1000,
+            requester: requester,
+        });
     }
 
     public async getSpotifySong(id: string, requester: string) {
         await this.refreshSpotify();
-        const track = (await this.spotifyApi.getTrack(id)).body;
+
+        let track = null;
+
+        try {
+            track = (await this.spotifyApi.getTrack(id)).body;
+        }
+        catch {
+            throw new Error(`Could not fetch the Spotify track. Check the URL?`);
+        }
+
+        const results = await this.youtubeMusicApi.search(`${track.name} ${track.artists[0]}`, "SONG");
 
         return new Song({
             title: track.name,
-            artist: track.artists.map(artist => artist.name).join(", "),
+            artist: track.artists.map(a => a.name).join(", "),
+            url: `https://open.spotify.com/track/${track.id}`,
             cover: track.album.images[0].url,
-            url: `https://open.spotify.com/track/${id}`,
-            duration: track.duration_ms,
+            duration: Math.floor(track.duration_ms),
             requester: requester,
-        });
+        })
     }
 
     public async getSpotifyPlaylist(id: string, requester: string): Promise<Song[]> {
         await this.refreshSpotify();
 
-        const playlist = (await this.spotifyApi.getPlaylistTracks(id)).body.items;
+        let playlist = null
 
-        // map tracks into songs
+        try {
+            playlist = (await this.spotifyApi.getPlaylistTracks(id)).body.items;
+        }
+        catch (e) {
+            // @ts-ignore
+            throw new Error(`Invalid URL! ${e.message}`)
+        }
+
+        // map playlist tracks into songs
         return playlist
             .map(track => track.track)
             .filter(track => !track)
             .map(track => new Song({
                 title: track.name,
-                artist: track.artists.map(artist => artist.name).join(", "),
+                artist: track.artists.map(a => a.name).join(", "),
+                url: `https://open.spotify.com/track/${track.id}`,
                 cover: track.album.images[0].url,
                 duration: track.duration_ms,
                 requester: requester,
-                url: `https://open.spotify.com/track/${track.id}`
             }));
     }
 
