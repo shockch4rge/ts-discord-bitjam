@@ -10,13 +10,15 @@ import {
 import Song from "../models/Song";
 import { Arrays } from "../utilities/Arrays";
 import GuildCache from "../db/GuildCache";
+import { delay } from "../utilities/Utils";
 
 export default class MusicService {
     private readonly cache: GuildCache
     public readonly connection: VoiceConnection;
     public readonly player: AudioPlayer;
+    public readonly queue: Song[];
+    private readyLock: boolean;
     public looping: LoopState;
-    public queue: Song[];
 
     public constructor(connection: VoiceConnection, cache: GuildCache) {
         this.cache = cache;
@@ -25,70 +27,109 @@ export default class MusicService {
         this.connection.subscribe(this.player);
         this.looping = LoopState.OFF;
         this.queue = [];
+        this.readyLock = false;
 
         this.setupPlayerListeners();
         this.setupConnectionListeners();
     }
 
     private setupConnectionListeners() {
-        this.connection.on(VoiceConnectionStatus.Ready, async oldState => {
-
-        });
-
-        this.connection.on(VoiceConnectionStatus.Destroyed, async oldState => {
-
-        });
-
-        this.connection.on(VoiceConnectionStatus.Disconnected, async (oldState, newState) => {
-            if (newState.reason === VoiceConnectionDisconnectReason.WebSocketClose &&
-                newState.closeCode === 4014) {
-                return;
+        this.connection.on('stateChange', async (_, newState) => {
+            if (newState.status === VoiceConnectionStatus.Disconnected) {
+                if (newState.reason === VoiceConnectionDisconnectReason.WebSocketClose && newState.closeCode === 4014) {
+                    /**
+                     * If the WebSocket closed with a 4014 code, this means that we should not manually attempt to reconnect,
+                     * but there is a chance the connection will recover itself if the reason of the disconnect was due to
+                     * switching voice channels. This is also the same code for the bot being kicked from the voice channel,
+                     * so we allow 5 seconds to figure out which scenario it is. If the bot has been kicked, we should destroy
+                     * the voice connection.
+                     */
+                    try {
+                        // Probably moved voice channel
+                        await entersState(this.connection, VoiceConnectionStatus.Connecting, 5_000);
+                    }
+                    catch {
+                        // Probably removed from voice channel
+                        this.connection.destroy();
+                        this.destroy();
+                    }
+                }
+                else if (this.connection.rejoinAttempts < 5) {
+                    /**
+                     * The disconnect in this case is recoverable, and we also have <5 repeated attempts so we will reconnect.
+                     */
+                    await delay((this.connection.rejoinAttempts + 1) * 5_000);
+                    this.connection.rejoin();
+                }
+                else {
+                    /**
+                     * The disconnect in this case may be recoverable, but we have no more remaining attempts - destroy.
+                     */
+                    this.connection.destroy();
+                    this.destroy();
+                }
             }
-
-            try {
-                await entersState(this.connection, VoiceConnectionStatus.Connecting, 10000);
+            else if (newState.status === VoiceConnectionStatus.Destroyed) {
+                /**
+                 * Once destroyed, stop the subscription.
+                 */
+                await this.stop();
+                this.destroy();
             }
-            catch {
-
+            else if (
+                !this.readyLock &&
+                (newState.status === VoiceConnectionStatus.Connecting || newState.status === VoiceConnectionStatus.Signalling)
+            ) {
+                /**
+                 * In the Signalling or Connecting states, we set a 20 second time limit for the connection to become ready
+                 * before destroying the voice connection. This stops the voice connection permanently existing in one of these
+                 * states.
+                 */
+                this.readyLock = true;
+                try {
+                    await entersState(this.connection, VoiceConnectionStatus.Ready, 20_000);
+                }
+                catch {
+                    if (this.connection.state.status !== VoiceConnectionStatus.Destroyed) this.connection.destroy();
+                }
+                finally {
+                    this.readyLock = false;
+                }
             }
         });
     }
 
     private setupPlayerListeners() {
-        this.player.on(AudioPlayerStatus.Playing, async (oldState, newState) => {
+        this.player.on("stateChange", async (oldState, newState) => {
+            if (oldState.status === AudioPlayerStatus.Idle && newState.status === AudioPlayerStatus.Idle) {
+                return;
+            }
 
-        });
+            if (newState.status === AudioPlayerStatus.Idle) {
+                switch (this.looping) {
+                    case LoopState.OFF:
+                        this.queue.shift();
 
-        this.player.on(AudioPlayerStatus.Paused, async (oldState, newState) => {
+                        if (this.queue.length !== 0) {
+                            await this.play();
+                        }
+                        break;
 
-        });
-
-        this.player.on(AudioPlayerStatus.Idle, async oldState => {
-            if (oldState.status === AudioPlayerStatus.Idle) return;
-
-            switch (this.looping) {
-                case LoopState.OFF:
-                    this.queue.shift();
-
-                    if (this.queue.length !== 0) {
+                    case LoopState.SONG:
+                        // replay the current song
                         await this.play();
-                    }
-                    break;
+                        break;
 
-                case LoopState.SONG:
-                    // replay the current song
-                    await this.play();
-                    break;
+                    case LoopState.QUEUE:
+                        const song = this.queue.shift();
 
-                case LoopState.QUEUE:
-                    const song = this.queue.shift();
-
-                    if (song && this.queue.length !== 0) {
-                        // relocate first song to the back of the queue
-                        await this.enqueue(song);
-                        await this.play();
-                    }
-                    break;
+                        if (song && this.queue.length !== 0) {
+                            // relocate first song to the back of the queue
+                            await this.enqueue(song);
+                            await this.play();
+                        }
+                        break;
+                }
             }
         });
     }
@@ -107,21 +148,25 @@ export default class MusicService {
 
     }
 
-    public dequeue(fromIndex: number, toIndex: number) {
-        for (let i = fromIndex; i <= toIndex; i++) {
-            Arrays.remove(this.queue[i], this.queue);
-        }
+    public dequeue(fromIndex: number, toIndex: number): Promise<void> {
+        return new Promise(resolve => {
+            if (toIndex <= 0) {
+                this.queue.splice(fromIndex, 1);
+            }
+            else {
+                const range = toIndex - fromIndex;
+                this.queue.splice(fromIndex, range);
+            }
+
+            resolve();
+        });
     }
 
-    /**
-     * Plays the first song in the queue.
-     * @returns {Promise<void>}
-     */
     public play(): Promise<void> {
         return new Promise((resolve, reject) => {
 
             if (this.player.state.status === AudioPlayerStatus.Playing) {
-                reject("Appended the song to the queue!");
+                reject("Appended the song(s) to the queue!");
                 return;
             }
 
@@ -134,6 +179,31 @@ export default class MusicService {
                     reject("Failed to create audio resource.");
                 });
 
+        });
+    }
+
+    public skip(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            if (this.queue.length <= 0) {
+                return reject("There are no more songs left in the queue!");
+            }
+
+            // get the next song after we've shifted the first song out
+            this.queue.shift();
+            const nextSong = this.queue.at(0);
+
+            // if it doesn't exist, we've reached the end of the queue
+            if (!nextSong) {
+                this.player.stop();
+                return reject("Reached the end of the queue!");
+            }
+
+            nextSong.createAudioResource()
+                .then(resource => {
+                    this.player.play(resource);
+                    resolve();
+                })
+                .catch(reject);
         });
     }
 
@@ -197,42 +267,6 @@ export default class MusicService {
         });
     }
 
-    public remove(index: number): Promise<void> {
-        return new Promise((resolve, reject) => {
-            if (index === this.queue.length || index < 0) {
-                reject(`Invalid index! Provided (${index}).`);
-            }
-
-            const song = this.queue.at(index);
-
-            if (!song) {
-                reject(`Song not found at index (${index}).`);
-            }
-
-            Arrays.remove(song, this.queue);
-            resolve();
-        });
-    }
-
-    public skip(): Promise<void> {
-        return new Promise((resolve, reject) => {
-            // get the next song first. If it doesn't exist, we've reached the end of the queue
-            if (!this.queue.at(1)) {
-                this.player.stop();
-                reject("Reached the end of the queue!");
-            }
-
-            this.queue.shift();
-
-            this.queue[0].createAudioResource()
-                .then(resource => {
-                    this.player.play(resource);
-                    resolve();
-                })
-                .catch(reject);
-        });
-    }
-
     public stop(): Promise<void> {
         return new Promise((resolve, reject) => {
             if (this.player.state.status === AudioPlayerStatus.Idle) {
@@ -240,7 +274,7 @@ export default class MusicService {
             }
 
             Arrays.clear(this.queue);
-            const stopSuccess = this.player.stop();
+            const stopSuccess = this.player.stop(true);
 
             if (!stopSuccess) {
                 reject("There was an error stopping the player.");
@@ -248,6 +282,10 @@ export default class MusicService {
 
             resolve();
         })
+    }
+
+    private destroy() {
+        delete this.cache.service;
     }
 
 }
