@@ -65,6 +65,26 @@ export class ApiHelper {
     public async getSpotifyAlbum(id: string, requester: string): Promise<Song[]> {
         await this.refreshSpotify();
 
+        let album = null;
+
+        try {
+            album = (await this.spotifyApi.getAlbumTracks(id)).body.items;
+        }
+        catch (e) {
+            // @ts-ignore
+            throw new Error(`Invalid URL! ${e.message}`)
+        }
+
+        // map each track into a song
+        const songs: Promise<Song>[] = album
+            .map(track => this.getSpotifySong(track.id, requester));
+
+        return Promise.all(songs);
+    }
+
+    public async getSpotifyPlaylist(id: string, requester: string): Promise<Song[]> {
+        await this.refreshSpotify();
+
         let playlist = null;
 
         try {

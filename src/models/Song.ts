@@ -38,8 +38,13 @@ export default class Song implements SongData {
                                 .then(resolve)
                                 .catch(reject);
                         }
+                        else if (url.pathname.includes("playlist")) {
+                            return apiHelper.getSpotifyPlaylist(url.pathname.slice(10), requester)
+                                .then(resolve)
+                                .catch(reject);
+                        }
 
-                        return reject();
+                        return reject("Invalid Spotify media type!");
 
                     case "www.youtube.com":
                         // https://www.youtube.com/watch?v=[videoId]
@@ -57,7 +62,7 @@ export default class Song implements SongData {
                         reject("Provide a Youtube or Spotify link!");
                 }
             }
-            // if it fails, search query is in word form
+                // if it fails, search query is in word form
             catch (err) {
 
             }
