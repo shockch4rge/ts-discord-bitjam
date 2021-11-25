@@ -32,7 +32,7 @@ module.exports = {
         const url = helper.getInteractionString("url")!;
 
         try {
-            const songs = await Song.from(url, helper.cache.apiHelper, member.displayName);
+            const songs = await Song.from(url, helper.cache.apiHelper, member.id);
             await service.enqueue(songs)
             await service.play();
         }
