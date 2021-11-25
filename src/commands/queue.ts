@@ -45,9 +45,11 @@ module.exports = {
                 const song = queue[i];
                 embed.addField(
                     `> ${numbers[i]} :   ${song.title} :: ${song.artist}`,
-                    `Duration: ${formatTime(song.duration)}`
+                    `Duration: ${formatTime(song.duration)} - Requested by @${song.requester}`
                 );
             }
+
+            embed.addField(`___`, "...");
         }
 
         embed
