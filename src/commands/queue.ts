@@ -36,16 +36,18 @@ module.exports = {
         const currentSong = queue[0];
         const numbers = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
 
-        // append the rows top down from highest
-        for (let i = queue.length - 1; i >= 0; i--) {
-            // append up to 10 fields
-            if (i <= queue.length - 10) break;
+        if (queue.length > 1) {
+            // append songs top down from newest
+            for (let i = queue.length - 1; i >= 1; i--) {
+                // append up to 10 fields
+                if (i <= queue.length - 10) break;
 
-            const song = queue[i];
-            embed.addField(
-                `> ${numbers[i]} :   ${song.title} :: ${song.artist}`,
-                `Duration: ${formatTime(song.duration)}`
-            );
+                const song = queue[i];
+                embed.addField(
+                    `> ${numbers[i]} :   ${song.title} :: ${song.artist}`,
+                    `Duration: ${formatTime(song.duration)}`
+                );
+            }
         }
 
         embed
