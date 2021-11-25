@@ -4,11 +4,11 @@ import { GuildMember, MessageEmbed } from "discord.js";
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName("move")
+        .setName("move-song")
         .setDescription("Move a song at an index to another one.")
         .addIntegerOption(option => option
             .setName("at-index")
-            .setDescription("The index of the song to move. (min = 0)")
+            .setDescription("The index of the song to move. (min = 1)")
             .setRequired(true))
         .addIntegerOption(option => option
             .setName("to-index")
@@ -33,7 +33,7 @@ module.exports = {
         }
 
         const atIndex = helper.getInteractionInteger("at-index")! - 1;
-        const toIndex = helper.getInteractionInteger("to-index")!;
+        const toIndex = helper.getInteractionInteger("to-index")! - 1;
 
         try {
             await service.moveSong(atIndex, toIndex);
@@ -45,7 +45,7 @@ module.exports = {
         }
 
         return await helper.respond(new MessageEmbed()
-            .setAuthor(`✔️  Moved song at index ${"`"+atIndex+"`"} to ${"`"+toIndex+"`"}`)
+            .setAuthor(`✔️  Moved song at index (${atIndex}) to (${toIndex})`)
             .setColor("GREEN"));
     }
 } as InteractionFile;
