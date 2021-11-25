@@ -232,7 +232,7 @@ export default class MusicService {
     public shuffle(): Promise<void> {
         return new Promise((resolve, reject) => {
             if (this.queue.length <= 0) {
-                reject("There are no songs in the queue.");
+                reject("There are no songs in the queue!");
             }
 
             Arrays.shuffle(this.queue);
