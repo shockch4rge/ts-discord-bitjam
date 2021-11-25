@@ -24,14 +24,6 @@ module.exports = {
                 .setColor("RED"));
         }
 
-        const queue = service.queue;
-
-        if (queue.length === 0) {
-            return await helper.respond(new MessageEmbed()
-                .setAuthor("❌ There are no more songs left in the queue!")
-                .setColor("RED"));
-        }
-
         try {
             await service.skip();
         }
