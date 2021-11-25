@@ -1,6 +1,7 @@
 import ytdl from "ytdl-core";
 import Song from "../models/Song";
 import SpotifyWebApi from "spotify-web-api-node";
+import { delay } from "../utilities/Utils";
 
 const auth = require("../../auth.json");
 
@@ -15,7 +16,7 @@ export class ApiHelper {
         this.youtubeMusicApi.initalize();
     }
 
-    public async getYoutubeSong(id: string, requester: string) {
+    public async getYoutubeSong(id: string, requester: string): Promise<Song> {
         let info = null;
 
         try {
@@ -35,7 +36,7 @@ export class ApiHelper {
         });
     }
 
-    public async getSpotifySong(id: string, requester: string) {
+    public async getSpotifySong(id: string, requester: string): Promise<Song> {
         await this.refreshSpotify();
 
         let track = null;
@@ -47,22 +48,24 @@ export class ApiHelper {
             throw new Error(`Could not fetch the Spotify track. Check the URL?`);
         }
 
-        const results = await this.youtubeMusicApi.search(`${track.name} ${track.artists[0]}`, "SONG");
+        // buffer time to initialise api
+        await delay(1000);
+        const result = (await this.youtubeMusicApi.search(`${track.name} ${track.artists[0].name}`, "song")).content[0];
 
         return new Song({
             title: track.name,
             artist: track.artists.map(a => a.name).join(", "),
-            url: `https://open.spotify.com/track/${track.id}`,
+            url: `https://youtu.be/${result.videoId}`,
             cover: track.album.images[0].url,
             duration: Math.floor(track.duration_ms),
             requester: requester,
         })
     }
 
-    public async getSpotifyPlaylist(id: string, requester: string): Promise<Song[]> {
+    public async getSpotifyAlbum(id: string, requester: string): Promise<Song[]> {
         await this.refreshSpotify();
 
-        let playlist = null
+        let playlist = null;
 
         try {
             playlist = (await this.spotifyApi.getPlaylistTracks(id)).body.items;
@@ -72,18 +75,12 @@ export class ApiHelper {
             throw new Error(`Invalid URL! ${e.message}`)
         }
 
-        // map playlist tracks into songs
-        return playlist
+        // map each track into a song
+        const songs: Promise<Song>[] = playlist
             .map(track => track.track)
-            .filter(track => !track)
-            .map(track => new Song({
-                title: track.name,
-                artist: track.artists.map(a => a.name).join(", "),
-                url: `https://open.spotify.com/track/${track.id}`,
-                cover: track.album.images[0].url,
-                duration: track.duration_ms,
-                requester: requester,
-            }));
+            .map(track => this.getSpotifySong(track.id, requester));
+
+        return Promise.all(songs);
     }
 
     public async refreshSpotify() {
