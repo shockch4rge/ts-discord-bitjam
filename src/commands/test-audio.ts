@@ -28,9 +28,8 @@ module.exports = {
         const service = helper.cache.service;
         const url = "https://www.youtube.com/watch?v=wN9bXy_fiOE"
 
-
         try {
-            const song = await Song.from(url, helper.cache.apiHelper, member.displayName);
+            const song = await Song.from(url, helper.cache.apiHelper, member.id);
             await service.enqueue(song);
             await service.play();
         }
