@@ -67,8 +67,10 @@ export class Arrays {
 
         const searchElement = array[searchIndex];
 
+        if (!searchElement) return;
+
         void array.splice(searchIndex,  1, _with);
-        void array.splice(withIndex, 1, searchElement)
+        void array.splice(withIndex, 1, searchElement);
     }
 
     /**
