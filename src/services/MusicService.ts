@@ -71,14 +71,13 @@ export default class MusicService {
                     this.queue.shift();
 
                     if (this.queue.length !== 0) {
-                        await this.play(this.queue[0]);
-                        new Date()
+                        await this.play();
                     }
                     break;
 
                 case LoopState.SONG:
                     // replay the current song
-                    await this.play(this.queue[0]);
+                    await this.play();
                     break;
 
                 case LoopState.QUEUE:
@@ -86,8 +85,8 @@ export default class MusicService {
 
                     if (song && this.queue.length !== 0) {
                         // relocate first song to the back of the queue
-                        this.queue.push(song);
-                        await this.play(this.queue[0]);
+                        await this.enqueue(song);
+                        await this.play();
                     }
                     break;
             }
@@ -96,22 +95,38 @@ export default class MusicService {
         });
     }
 
+    public enqueue(songs: Song | Song[]): Promise<void> {
+        return new Promise(resolve => {
+            if (Array.isArray(songs)) {
+                this.queue.push(...songs);
+                return;
+            }
+
+            this.queue.push(songs);
+            resolve();
+        })
+
+    }
+
     public dequeue(fromIndex: number, toIndex: number) {
         for (let i = fromIndex; i <= toIndex; i++) {
             Arrays.remove(this.queue[i], this.queue);
         }
     }
 
-    public play(song: Song): Promise<void> {
+    /**
+     * Plays the first song in the queue.
+     * @returns {Promise<void>}
+     */
+    public play(): Promise<void> {
         return new Promise((resolve, reject) => {
-            this.queue.push(song)
 
             if (this.player.state.status === AudioPlayerStatus.Playing) {
                 reject("Appended the song to the queue!");
                 return;
             }
 
-            song.createAudioResource()
+            this.queue[0].createAudioResource()
                 .then(resource => {
                     this.player.play(resource);
                     resolve();

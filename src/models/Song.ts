@@ -19,32 +19,50 @@ export default class Song implements SongData {
         this.requester = data.requester;
     }
 
-    public static from(_url: string, apiHelper: ApiHelper, requester: string): Promise<Song> {
+    public static from(query: string, apiHelper: ApiHelper, requester: string): Promise<Song | Song[]> {
         return new Promise((resolve, reject) => {
-            const url = new URL(_url);
+            // try to get a url from the query
+            try {
+                const url = new URL(query);
 
-            switch (url.hostname) {
-                case "open.spotify.com":
-                    // https://open.spotify.com/track/[trackId]?si=[something]
-                    return apiHelper.getSpotifySong(url.pathname.slice(7), requester)
-                        .then(resolve)
-                        .catch(reject);
+                switch (url.hostname) {
+                    case "open.spotify.com":
+                        // https://open.spotify.com/track/[trackId]?si=[something]
+                        if (url.pathname.includes("track")) {
+                            return apiHelper.getSpotifySong(url.pathname.slice(7), requester)
+                                .then(resolve)
+                                .catch(reject);
+                        }
+                        else if (url.pathname.includes("album")) {
+                            return apiHelper.getSpotifyAlbum(url.pathname.slice(7), requester)
+                                .then(resolve)
+                                .catch(reject);
+                        }
 
-                case "www.youtube.com":
-                    // https://www.youtube.com/watch?v=[videoId]
-                    return apiHelper.getYoutubeSong(url.searchParams.get("v")!, requester)
-                        .then(resolve)
-                        .catch(reject);
+                        return reject();
 
-                case "youtu.be":
-                    // https://youtu.be/[videoId]
-                    return apiHelper.getYoutubeSong(url.pathname.slice(1), requester)
-                        .then(resolve)
-                        .catch(reject);
+                    case "www.youtube.com":
+                        // https://www.youtube.com/watch?v=[videoId]
+                        return apiHelper.getYoutubeSong(url.searchParams.get("v")!, requester)
+                            .then(resolve)
+                            .catch(reject);
 
-                default:
-                    reject("Provide a Youtube or Spotify link!");
+                    case "youtu.be":
+                        // https://youtu.be/[videoId]
+                        return apiHelper.getYoutubeSong(url.pathname.slice(1), requester)
+                            .then(resolve)
+                            .catch(reject);
+
+                    default:
+                        reject("Provide a Youtube or Spotify link!");
+                }
             }
+            // if it fails, search query is in word form
+            catch (err) {
+
+            }
+
+
         });
     }
 
@@ -97,42 +115,6 @@ export default class Song implements SongData {
             duration: 123456
         })
     }
-
-
-    // /**
-    //  * Creates a Song from a video URL and lifecycle callback methods.
-    //  *
-    //  * @param url The URL of the video
-    //  * @param methods Lifecycle callbacks
-    //  * @returns The created Song
-    //  */
-    // public static async from(url: string, {
-    //     onStart,
-    //     onFinish,
-    //     onError
-    // }: Pick<Song, 'onStart' | 'onFinish' | 'onError'>): Promise<Song> {
-    //     // The methods are wrapped so that we can ensure that they are only called once.
-    //     const wrappedMethods = {
-    //         onStart() {
-    //             wrappedMethods.onStart = noop;
-    //             onStart();
-    //         },
-    //         onFinish() {
-    //             wrappedMethods.onFinish = noop;
-    //             onFinish();
-    //         },
-    //         onError(error: Error) {
-    //             wrappedMethods.onError = noop;
-    //             onError(error);
-    //         },
-    //     };
-    //
-    //     return new Song({
-    //         title: getInfo(url).read().title,
-    //         url,
-    //         ...wrappedMethods,
-    //     });
-    // }
 }
 
 /**

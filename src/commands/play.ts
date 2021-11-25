@@ -32,8 +32,9 @@ module.exports = {
         const url = helper.getInteractionString("url")!;
 
         try {
-            const song = await Song.from(url, helper.cache.apiHelper, member.displayName);
-            await service.play(song);
+            const songs = await Song.from(url, helper.cache.apiHelper, member.displayName);
+            await service.enqueue(songs)
+            await service.play();
         }
         catch (e) {
             return await helper.respond(new MessageEmbed()
