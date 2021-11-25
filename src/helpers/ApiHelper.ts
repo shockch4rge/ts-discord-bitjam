@@ -50,7 +50,9 @@ export class ApiHelper {
 
         // buffer time to initialise api
         await delay(1000);
-        const result = (await this.youtubeMusicApi.search(`${track.name} ${track.artists[0].name}`, "song")).content[0];
+        const result = (
+            await this.youtubeMusicApi.search(`${track.name} ${track.artists[0].name}`, "song")
+        ).content[0];
 
         return new Song({
             title: track.name,
@@ -59,7 +61,7 @@ export class ApiHelper {
             cover: track.album.images[0].url,
             duration: Math.floor(track.duration_ms),
             requester: requester,
-        })
+        });
     }
 
     public async getSpotifyAlbum(id: string, requester: string): Promise<Song[]> {
@@ -102,6 +104,7 @@ export class ApiHelper {
 
         return Promise.all(songs);
     }
+
 
     public async refreshSpotify() {
         const response = (await this.spotifyApi.refreshAccessToken()).body;
