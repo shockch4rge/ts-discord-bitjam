@@ -8,12 +8,14 @@ const auth = require("../../auth.json");
 export class ApiHelper {
     private readonly spotifyApi: SpotifyWebApi;
     private readonly youtubeMusicApi: any;
+    private readonly geniusApi: any;
 
     public constructor() {
         this.spotifyApi = new SpotifyWebApi(auth.spotify);
         this.spotifyApi.setAccessToken(auth.spotify.accessToken);
         this.youtubeMusicApi = new (require("youtube-music-api"))();
         this.youtubeMusicApi.initalize();
+        this.geniusApi = new (require("node-genius-api"))(auth.genius.accessToken);
     }
 
     public async getYoutubeSong(id: string, requester: string): Promise<Song> {
@@ -105,6 +107,27 @@ export class ApiHelper {
         return Promise.all(songs);
     }
 
+    public async getGeniusLyrics(query: string): Promise<string> {
+        const song = (await this.geniusApi.search(query))[0]?.result;
+
+        if (!song) {
+            throw new Error("");
+        }
+
+        const lyrics = (await this.geniusApi.lyrics(song.id)).slice(1) as {
+            part: string;
+            content: string[];
+        }[]
+        const lines: string[] = [];
+
+        for (const lyric of lyrics) {
+            lines.push(`\u200B`);
+            lines.push(...lyric.content);
+        }
+
+        const lyricsString = lines.slice(1).join("\n");
+        return lyricsString.slice(0, 6000);
+    }
 
     public async refreshSpotify() {
         const response = (await this.spotifyApi.refreshAccessToken()).body;
