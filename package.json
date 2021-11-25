@@ -19,6 +19,7 @@
     "express": "^4.17.1",
     "ffmpeg-static": "^4.4.0",
     "firebase-admin": "^10.0.0",
+    "node-genius-api": "^1.2.0",
     "open": "^8.4.0",
     "qs": "^6.10.1",
     "spotify-web-api-node": "^5.0.2",
