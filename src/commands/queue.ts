@@ -39,8 +39,8 @@ module.exports = {
         if (queue.length > 1) {
             // append songs top down from newest
             for (let i = queue.length - 1; i >= 1; i--) {
-                // append up to 10 fields
-                if (i <= queue.length - 10) break;
+                // append up to 9 fields
+                if (i <= queue.length - 11) break;
 
                 const song = queue[i];
                 embed.addField(
