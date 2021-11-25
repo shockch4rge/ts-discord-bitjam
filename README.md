@@ -27,7 +27,7 @@ This was originally written in JavaScript, but I got really fed up with loose ty
 # Notes
 Creating a song's audio resource can be extremely buggy when working with ytdl-core or ytdl. Most of the time, the song cuts out halfway and throws an error. This has been a known issue on discordjs's part (I think) and they came out with a solution.
 
-Here's an extract from a music bot example that they thankfully provided on Github:
+Here's an extract from a music bot example that [thankfully provided on GitHub]:
 ```ts
 
 export default class Song {
@@ -79,3 +79,4 @@ From what I know, audio quality is significantly improved and the midway crashin
 [`@discordjs/builders`]: https://www.npmjs.com/package/@discordjs/builders
 [`ts-node`]: https://www.npmjs.com/package/ts-node
 [`ytdl-core`]: https://www.npmjs.com/package/ytdl-core
+[thankfully provided on GitHub]: https://github.com/discordjs/voice/tree/3dabc30fca79212809d1191e0c2f2b54c3f8cdc7/examples/music-bot
