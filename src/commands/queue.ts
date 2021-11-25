@@ -37,19 +37,19 @@ module.exports = {
         const numbers = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
 
         if (queue.length > 1) {
+            embed.addField(`___`, "...");
+
             // append songs top down from newest
-            for (let i = queue.length - 1; i >= 1; i--) {
+            for (let i = 1; i < queue.length; i++) {
                 // append up to 9 fields
-                if (i <= queue.length - 11) break;
+                if (i >= 9) break;
 
                 const song = queue[i];
                 embed.addField(
                     `> ${numbers[i]} :   ${song.title} :: ${song.artist}`,
-                    `Duration: ${formatTime(song.duration)} - Requested by @${song.requester}`
+                    `Duration: ${formatTime(song.duration)} - Requested by <@!${song.requester}>`
                 );
             }
-
-            embed.addField(`___`, "...");
         }
 
         embed
