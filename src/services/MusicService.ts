@@ -90,8 +90,6 @@ export default class MusicService {
                     }
                     break;
             }
-
-
         });
     }
 
@@ -99,10 +97,11 @@ export default class MusicService {
         return new Promise(resolve => {
             if (Array.isArray(songs)) {
                 this.queue.push(...songs);
-                return;
+            }
+            else {
+                this.queue.push(songs);
             }
 
-            this.queue.push(songs);
             resolve();
         })
 
