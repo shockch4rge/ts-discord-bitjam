@@ -42,14 +42,23 @@ module.exports = {
             index = 1;
         }
 
-        if (index <= 0 || index >= service.queue.length) {
+        if (index <= 0 || index > service.queue.length) {
             return await helper.respond(new MessageEmbed()
                 .setAuthor(`❌  Invalid index provided: (${index})`)
                 .setColor("RED"));
         }
 
         const song = service.queue[index - 1];
-        const lyrics = await helper.cache.apiHelper.getGeniusLyrics(`${song.title} ${song.artist}`);
+        let lyrics: string;
+
+        try {
+            lyrics = await helper.cache.apiHelper.getGeniusLyrics(`${song.title} ${song.artist}`);
+        }
+        catch (e) {
+            return await helper.respond(new MessageEmbed()
+                .setAuthor(`❌  ${e}`)
+                .setColor("RED"));
+        }
 
         return await helper.respond(new MessageEmbed()
             .setAuthor(`🎤  Lyrics for ${song.title}:`)

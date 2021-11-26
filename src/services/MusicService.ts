@@ -169,9 +169,8 @@ export default class MusicService {
 
     public play(): Promise<void> {
         return new Promise((resolve, reject) => {
-
             if (this.player.state.status === AudioPlayerStatus.Playing) {
-                reject("Appended the song(s) to the queue!");
+                reject();
                 return;
             }
 
@@ -179,9 +178,6 @@ export default class MusicService {
                 .then(resource => {
                     this.player.play(resource);
                     resolve();
-                })
-                .catch(() => {
-                    reject("Failed to create audio resource.");
                 });
 
         });
@@ -287,6 +283,11 @@ export default class MusicService {
         })
     }
 
+    /**
+     * CACHE IS ONLY USED HERE TO DELETE THE SERVICE.
+     * DO NOT USE CACHE FOR ANYTHING ELSE
+     * @private
+     */
     private destroy() {
         delete this.cache.service;
     }
