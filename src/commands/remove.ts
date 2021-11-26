@@ -36,7 +36,7 @@ module.exports = {
         const toIndex = helper.getInteractionInteger("to-index") ?? 0;
 
         try {
-            await service.dequeue(fromIndex, toIndex);
+            await service.remove(fromIndex, toIndex);
         }
         catch (e) {
             return await helper.respond(new MessageEmbed()
