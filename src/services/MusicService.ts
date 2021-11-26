@@ -74,7 +74,7 @@ export default class MusicService {
                 /**
                  * Once destroyed, stop the subscription.
                  */
-                await this.stop();
+                this.stop().catch(() => {});
                 this.destroy();
             }
             else if (
@@ -146,7 +146,7 @@ export default class MusicService {
             }
 
             resolve();
-        })
+        });
 
     }
 
@@ -208,7 +208,9 @@ export default class MusicService {
                     this.player.play(resource);
                     resolve();
                 })
-                .catch(reject);
+                .catch(() => {
+                    reject("Failed to create audio resource.");
+                });
         });
     }
 

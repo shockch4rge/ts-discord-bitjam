@@ -52,17 +52,14 @@ export class Arrays {
     }
 
     /**
-     * Shuffle an array randomly. This method modifies the array.
+     * Shuffle an array randomly, excluding the first element. This method modifies the array.
      * @param {T[]} array The array to shuffle
-     * @returns {T[]} The shuffled array.
      */
     public static shuffle<T>(array: T[]) {
-        for (let i = array.length - 1; i > 0; i--) {
+        for (let i = array.length - 1; i > 1; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [array[i], array[j]] = [array[j], array[i]];
         }
-
-        return array;
     }
 
     /**
