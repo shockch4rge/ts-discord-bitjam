@@ -76,9 +76,15 @@ export class ApiHelper {
             throw new Error(`Invalid URL! ${e.message}`)
         }
 
-        // map each track into a song promise
-        const songs: Promise<Song>[] = album
-            .map(track => this.getSpotifySong(track.id, requester));
+        const songs: Promise<Song>[] = [];
+
+        for (let i = 0; i < album.length; i++) {
+            // append up to 100 songs at a time to avoid API abuse
+            if (i >= 100) break;
+
+            const track = album[i];
+            songs.push(this.getSpotifySong(track.id, requester));
+        }
 
         return Promise.all(songs);
     }
@@ -89,17 +95,22 @@ export class ApiHelper {
         let playlist = null;
 
         try {
-            playlist = (await this.spotifyApi.getPlaylistTracks(id)).body.items;
+            playlist = (await this.spotifyApi.getPlaylistTracks(id)).body.items.map(track => track.track);
         }
         catch (e) {
             // @ts-ignore
             throw new Error(`Invalid URL! ${e.message}`)
         }
 
-        // map each track into a song
-        const songs: Promise<Song>[] = playlist
-            .map(track => track.track)
-            .map(track => this.getSpotifySong(track.id, requester));
+        const songs: Promise<Song>[] = [];
+
+        for (let i = 0; i < playlist.length; i++) {
+            // append up to 100 songs at a time to avoid API abuse
+            if (i >= 100) break;
+
+            const track = playlist[i];
+            songs.push(this.getSpotifySong(track.id, requester));
+        }
 
         return Promise.all(songs);
     }
