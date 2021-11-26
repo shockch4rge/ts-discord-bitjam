@@ -8,10 +8,10 @@ import Song from "../models/Song";
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("play")
-        .setDescription("Play a song with a given url.")
+        .setDescription("Play a song with a specified search query or URL.")
         .addStringOption(option => option
-            .setName("url")
-            .setDescription("The song's URL. Can be a Spotify or Youtube link.")
+            .setName("query")
+            .setDescription("Can be a search query, Spotify or Youtube link.")
             .setRequired(true)
         ),
 
@@ -21,7 +21,7 @@ module.exports = {
         if (!helper.cache.service) {
             const connection = joinVoiceChannel({
                 guildId: member.guild.id,
-                 channelId: member.voice.channelId!,
+                channelId: member.voice.channelId!,
                 adapterCreator: member.guild.voiceAdapterCreator as DiscordGatewayAdapterCreator,
             });
 
@@ -29,21 +29,30 @@ module.exports = {
         }
 
         const service = helper.cache.service;
-        const url = helper.getInteractionString("url")!;
+        const query = helper.getInteractionString("query")!;
 
         try {
-            const songs = await Song.from(url, helper.cache.apiHelper, member.id);
-            await service.enqueue(songs)
-            await service.play();
+            const songs = await Song.from(query, helper.cache.apiHelper, member.id);
+            await service.enqueue(songs);
         }
         catch (e) {
             return await helper.respond(new MessageEmbed()
-            // @ts-ignore
+                // @ts-ignore
                 .setAuthor(`❌  ${e.msg ?? e}`)
                 .setColor("RED"));
         }
 
-        await helper.respond(new MessageEmbed()
+        try {
+            await service.play();
+        }
+        // appended to the queue instead
+        catch {
+            return await helper.respond(new MessageEmbed()
+                .setAuthor("✔️  Appended the song(s) to the queue!")
+                .setColor("GREEN"));
+        }
+
+        return await helper.respond(new MessageEmbed()
             .setAuthor("✔️  Playing...")
             .setColor("GREEN"));
     }
