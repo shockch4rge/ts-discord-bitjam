@@ -27,7 +27,7 @@ This was originally written in JavaScript, but I got really fed up with loose ty
 # Notes
 Creating a track's audio resource can be extremely buggy when working with ytdl-core or ytdl. Most of the time, the track cuts out halfway and throws an error. This has been a known issue on discordjs's part (I think) and they came out with a solution.
 
-Here's an extract from a music bot example that [thankfully provided on GitHub]:
+Here's an extract from a music bot example that they [thankfully provided on GitHub]:
 ```ts
 
 export default class Track {
