@@ -12,7 +12,7 @@ module.exports = {
             .setDescription("The looping state to switch to.")
             .setRequired(true)
             .addChoice("off", LoopState.OFF)
-            .addChoice("song", LoopState.SONG)
+            .addChoice("track", LoopState.TRACK)
             .addChoice("queue", LoopState.QUEUE)),
 
     execute: async helper => {

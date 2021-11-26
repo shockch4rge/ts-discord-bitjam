@@ -3,12 +3,12 @@ import { SlashCommandBuilder } from "@discordjs/builders";
 import { GuildMember, MessageEmbed } from "discord.js";
 import { DiscordGatewayAdapterCreator, joinVoiceChannel } from "@discordjs/voice";
 import MusicService from "../services/MusicService";
-import Song from "../models/Song";
+import Track from "../models/Track";
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("play")
-        .setDescription("Play a song with a specified search query or URL.")
+        .setDescription("Play a track with a specified search query or URL.")
         .addStringOption(option => option
             .setName("query")
             .setDescription("Can be a search query, Spotify or Youtube link.")
@@ -32,8 +32,8 @@ module.exports = {
         const query = helper.getInteractionString("query")!;
 
         try {
-            const songs = await Song.from(query, helper.cache.apiHelper, member.id);
-            await service.enqueue(songs);
+            const tracks = await Track.from(query, helper.cache.apiHelper, member.id);
+            await service.enqueue(tracks);
         }
         catch (e) {
             return await helper.respond(new MessageEmbed()
@@ -48,7 +48,7 @@ module.exports = {
         // appended to the queue instead
         catch {
             return await helper.respond(new MessageEmbed()
-                .setAuthor("✔️  Appended the song(s) to the queue!")
+                .setAuthor("✔️  Appended the tracks(s) to the queue!")
                 .setColor("GREEN"));
         }
 

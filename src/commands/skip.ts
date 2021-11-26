@@ -5,7 +5,7 @@ import { GuildMember, MessageEmbed } from "discord.js";
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("skip")
-        .setDescription("Skips the current song in the queue."),
+        .setDescription("Skips the current track in the queue."),
 
     execute: async helper => {
         const member = helper.interaction.member as GuildMember;

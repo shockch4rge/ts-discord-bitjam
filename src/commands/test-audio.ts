@@ -3,7 +3,7 @@
 import { InteractionFile } from "../helpers/BotHelper";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { GuildMember, MessageEmbed } from "discord.js";
-import Song from "../models/Song";
+import Track from "../models/Track";
 import { DiscordGatewayAdapterCreator, joinVoiceChannel } from "@discordjs/voice";
 import MusicService from "../services/MusicService";
 
@@ -29,8 +29,8 @@ module.exports = {
         const url = "https://www.youtube.com/watch?v=wN9bXy_fiOE"
 
         try {
-            const song = await Song.from(url, helper.cache.apiHelper, member.id);
-            await service.enqueue(song);
+            const track = await Track.from(url, helper.cache.apiHelper, member.id);
+            await service.enqueue(track);
             await service.play();
         }
         catch (e) {

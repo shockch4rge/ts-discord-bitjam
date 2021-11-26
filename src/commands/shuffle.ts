@@ -5,7 +5,7 @@ import { GuildMember, MessageEmbed } from "discord.js";
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("shuffle")
-        .setDescription("Shuffles the songs in the queue, if there are any."),
+        .setDescription("Shuffles the tracks in the queue, if there are any."),
 
     execute: async helper => {
         const member = helper.interaction.member as GuildMember;

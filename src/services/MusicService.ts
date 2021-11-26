@@ -7,7 +7,7 @@ import {
     VoiceConnectionDisconnectReason,
     VoiceConnectionStatus
 } from "@discordjs/voice";
-import Song from "../models/Song";
+import Track from "../models/Track";
 import { Arrays } from "../utilities/Arrays";
 import GuildCache from "../db/GuildCache";
 import { delay } from "../utilities/Utils";
@@ -16,7 +16,7 @@ export default class MusicService {
     private readonly cache: GuildCache
     public readonly connection: VoiceConnection;
     public readonly player: AudioPlayer;
-    public readonly queue: Song[];
+    public readonly queue: Track[];
     public loopingState: LoopState;
     private readyLock: boolean;
 
@@ -117,17 +117,17 @@ export default class MusicService {
                         }
                         break;
 
-                    case LoopState.SONG:
-                        // replay the current song
+                    case LoopState.TRACK:
+                        // replay the current track
                         await this.play();
                         break;
 
                     case LoopState.QUEUE:
-                        const song = this.queue.shift();
+                        const track = this.queue.shift();
 
-                        if (song && this.queue.length !== 0) {
-                            // relocate first song to the back of the queue
-                            await this.enqueue(song);
+                        if (track && this.queue.length !== 0) {
+                            // relocate first track to the back of the queue
+                            await this.enqueue(track);
                             await this.play();
                         }
                         break;
@@ -136,13 +136,13 @@ export default class MusicService {
         });
     }
 
-    public enqueue(songs: Song | Song[]): Promise<void> {
+    public enqueue(tracks: Track | Track[]): Promise<void> {
         return new Promise(resolve => {
-            if (Array.isArray(songs)) {
-                this.queue.push(...songs);
+            if (Array.isArray(tracks)) {
+                this.queue.push(...tracks);
             }
             else {
-                this.queue.push(songs);
+                this.queue.push(tracks);
             }
 
             resolve();
@@ -153,7 +153,7 @@ export default class MusicService {
     public remove(fromIndex: number, toIndex: number): Promise<void> {
         return new Promise((resolve, reject) => {
             if (this.queue.length === 0) {
-                reject(`There are no songs in the queue!`);
+                reject(`There are no tracks in the queue!`);
             }
             if (fromIndex < 0 || fromIndex >= this.queue.length) {
                 reject(`Invalid from-index provided: (${fromIndex})`);
@@ -186,20 +186,20 @@ export default class MusicService {
     public skip(): Promise<void> {
         return new Promise((resolve, reject) => {
             if (this.queue.length <= 0) {
-                return reject("There are no more songs left in the queue!");
+                return reject("There are no more tracks left in the queue!");
             }
 
-            // get the next song after we've shifted the first song out
+            // get the next track after we've shifted the first one out
             this.queue.shift();
-            const nextSong = this.queue.at(0);
+            const nextTrack = this.queue.at(0);
 
             // if it doesn't exist, we've reached the end of the queue
-            if (!nextSong) {
+            if (!nextTrack) {
                 this.player.stop();
                 return reject("Reached the end of the queue!");
             }
 
-            nextSong.createAudioResource()
+            nextTrack.createAudioResource()
                 .then(resource => {
                     this.player.play(resource);
                     resolve();
@@ -235,7 +235,7 @@ export default class MusicService {
     public shuffle(): Promise<void> {
         return new Promise((resolve, reject) => {
             if (this.queue.length <= 0) {
-                reject("There are no songs in the queue!");
+                reject("There are no tracks in the queue!");
             }
 
             Arrays.shuffle(this.queue);
@@ -255,7 +255,7 @@ export default class MusicService {
 
     }
 
-    public moveSong(atIndex: number, toIndex: number): Promise<void> {
+    public moveTrack(atIndex: number, toIndex: number): Promise<void> {
         return new Promise((resolve, reject) => {
             if (atIndex < 0 || toIndex >= this.queue.length) {
                 reject(`Invalid index! Provided (${atIndex}) and (${toIndex})`);
@@ -296,6 +296,6 @@ export default class MusicService {
 
 export enum LoopState {
     OFF = "off",
-    SONG = "song",
+    TRACK = "track",
     QUEUE = "queue",
 }

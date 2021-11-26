@@ -5,14 +5,14 @@ import { GuildMember, MessageEmbed } from "discord.js";
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("remove")
-        .setDescription("Remove a single song, or a range of songs from specified indexes.")
+        .setDescription("Remove a single/range of tracks from specified indexes.")
         .addIntegerOption(option => option
             .setName("from-index")
-            .setDescription("The starting index to remove songs from. Leave only this option filled to remove 1 song. (min: 1)")
+            .setDescription("The starting index to remove tracks from. Leave only this option filled to remove one track. (min: 1)")
             .setRequired(true))
         .addIntegerOption(option => option
             .setName("to-index")
-            .setDescription("The range bound to remove songs in. Leave this empty to remove 1 song. (max: queue length - 1)")
+            .setDescription("The range bound to remove tracks in. Leave this empty to remove only one. (max: queue length - 1)")
             .setRequired(false)),
 
     execute: async helper => {
@@ -45,7 +45,7 @@ module.exports = {
         }
 
         return await helper.respond(new MessageEmbed()
-            .setAuthor(`✔️  Removed ${toIndex <= 0 ? `${fromIndex} song` : `${toIndex - fromIndex} songs`}!`)
+            .setAuthor(`✔️  Removed ${toIndex <= 0 ? `${fromIndex} track` : `${toIndex - fromIndex} tracks`}!`)
             .setColor("GREEN"));
     }
 

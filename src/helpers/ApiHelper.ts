@@ -1,5 +1,5 @@
 import ytdl from "ytdl-core";
-import Song from "../models/Song";
+import Track from "../models/Track";
 import SpotifyWebApi from "spotify-web-api-node";
 import ytpl from "ytpl";
 
@@ -18,7 +18,7 @@ export class ApiHelper {
         this.geniusApi = new (require("node-genius-api"))(auth.genius.accessToken);
     }
 
-    public async getYoutubeSong(id: string, requester: string): Promise<Song> {
+    public async getYoutubeTrack(id: string, requester: string): Promise<Track> {
         let info = null;
 
         try {
@@ -28,7 +28,7 @@ export class ApiHelper {
             throw new Error(`Invalid link! No such video ID found: ${id}`);
         }
 
-        return new Song({
+        return new Track({
             title: info.title,
             artist: info.author.name,
             url: `https://youtu.be/${info.videoId}`,
@@ -38,10 +38,10 @@ export class ApiHelper {
         });
     }
 
-    public async getYoutubePlaylist(id: string, requester: string): Promise<Song[]> {
+    public async getYoutubePlaylist(id: string, requester: string): Promise<Track[]> {
         const playlist = (await ytpl(id)).items;
 
-        return playlist.map(item => new Song({
+        return playlist.map(item => new Track({
             title: item.title,
             artist: item.author.name,
             url: `https://youtu.be/${item.id}`,
@@ -51,10 +51,10 @@ export class ApiHelper {
         }));
     }
 
-    public async searchYoutubeVideos(query: string, requester: string): Promise<Song> {
+    public async searchYoutubeVideos(query: string, requester: string): Promise<Track> {
         const video = (await this.youtubeMusicApi.search(query, "video")).content[0];
 
-        return new Song({
+        return new Track({
             title: video.name,
             artist: video.author,
             url: `https://youtu.be/${video.videoId}`,
@@ -64,7 +64,7 @@ export class ApiHelper {
         });
     }
 
-    public async getSpotifySong(id: string, requester: string): Promise<Song> {
+    public async getSpotifyTrack(id: string, requester: string): Promise<Track> {
         await this.refreshSpotify();
 
         let track = null;
@@ -77,10 +77,10 @@ export class ApiHelper {
         }
 
         const result = (
-            await this.youtubeMusicApi.search(`${track.name} ${track.artists[0].name}`, "song")
+            await this.youtubeMusicApi.search(`${track.name} ${track.artists[0].name}`, "track")
         ).content[0];
 
-        return new Song({
+        return new Track({
             title: track.name,
             artist: track.artists.map(a => a.name).join(", "),
             url: `https://youtu.be/${result.videoId}`,
@@ -90,7 +90,7 @@ export class ApiHelper {
         });
     }
 
-    public async getSpotifyAlbum(id: string, requester: string): Promise<Song[]> {
+    public async getSpotifyAlbum(id: string, requester: string): Promise<Track[]> {
         await this.refreshSpotify();
 
         let album = null;
@@ -103,20 +103,20 @@ export class ApiHelper {
             throw new Error(`Invalid URL! ${e.message}`)
         }
 
-        const songs: Promise<Song>[] = [];
+        const tracks: Promise<Track>[] = [];
 
         for (let i = 0; i < album.length; i++) {
-            // append up to 100 songs at a time to avoid API abuse
+            // append up to 100 tracks at a time to avoid API abuse
             if (i >= 100) break;
 
             const track = album[i];
-            songs.push(this.getSpotifySong(track.id, requester));
+            tracks.push(this.getSpotifyTrack(track.id, requester));
         }
 
-        return Promise.all(songs);
+        return Promise.all(tracks);
     }
 
-    public async getSpotifyPlaylist(id: string, requester: string): Promise<Song[]> {
+    public async getSpotifyPlaylist(id: string, requester: string): Promise<Track[]> {
         await this.refreshSpotify();
 
         let playlist = null;
@@ -129,27 +129,27 @@ export class ApiHelper {
             throw new Error(`Invalid URL! ${e.message}`)
         }
 
-        const songs: Promise<Song>[] = [];
+        const tracks: Promise<Track>[] = [];
 
         for (let i = 0; i < playlist.length; i++) {
-            // append up to 100 songs at a time to avoid API abuse
+            // append up to 100 tracks at a time to avoid API abuse
             if (i >= 100) break;
 
             const track = playlist[i];
-            songs.push(this.getSpotifySong(track.id, requester));
+            tracks.push(this.getSpotifyTrack(track.id, requester));
         }
 
-        return Promise.all(songs);
+        return Promise.all(tracks);
     }
 
     public async getGeniusLyrics(query: string): Promise<string> {
-        const song = (await this.geniusApi.search(query))[0]?.result;
+        const track = (await this.geniusApi.search(query))[0]?.result;
 
-        if (!song) {
-            throw new Error("Could not find lyrics for this song!");
+        if (!track) {
+            throw new Error("Could not find lyrics for this track!");
         }
 
-        const lyrics = (await this.geniusApi.lyrics(song.id)).slice(1) as {
+        const lyrics = (await this.geniusApi.lyrics(track.id)).slice(1) as {
             part: string,
             content: string[]
         }[];

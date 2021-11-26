@@ -2,7 +2,7 @@ import { AudioResource, createAudioResource, demuxProbe } from "@discordjs/voice
 import { raw as ytdl } from 'youtube-dl-exec';
 import { ApiHelper } from "../helpers/ApiHelper";
 
-export default class Song implements SongData {
+export default class Track implements TrackData {
     public readonly title: string;
     public readonly artist: string;
     public readonly url: string;
@@ -10,7 +10,7 @@ export default class Song implements SongData {
     public readonly duration: number;
     public readonly requester: string;
 
-    public constructor(data: SongData) {
+    public constructor(data: TrackData) {
         this.title = data.title;
         this.artist = data.artist;
         this.url = data.url;
@@ -19,7 +19,7 @@ export default class Song implements SongData {
         this.requester = data.requester;
     }
 
-    public static from(query: string, apiHelper: ApiHelper, requester: string): Promise<Song | Song[]> {
+    public static from(query: string, apiHelper: ApiHelper, requester: string): Promise<Track | Track[]> {
         return new Promise((resolve, reject) => {
             // try to get a url from the query
             try {
@@ -28,7 +28,7 @@ export default class Song implements SongData {
                 switch (url.hostname) {
                     case "open.spotify.com":
                         if (url.pathname.includes("track")) {
-                            return apiHelper.getSpotifySong(url.pathname.slice(7), requester)
+                            return apiHelper.getSpotifyTrack(url.pathname.slice(7), requester)
                                 .then(resolve)
                                 .catch(reject);
                         }
@@ -47,7 +47,7 @@ export default class Song implements SongData {
 
                     case "www.youtube.com":
                         if (!url.searchParams.get("list")) {
-                            return apiHelper.getYoutubeSong(url.searchParams.get("v")!, requester)
+                            return apiHelper.getYoutubeTrack(url.searchParams.get("v")!, requester)
                                 .then(resolve)
                                 .catch(reject);
                         }
@@ -58,7 +58,7 @@ export default class Song implements SongData {
                         }
 
                     case "youtu.be":
-                        return apiHelper.getYoutubeSong(url.pathname.slice(1), requester)
+                        return apiHelper.getYoutubeTrack(url.pathname.slice(1), requester)
                             .then(resolve)
                             .catch(reject);
 
@@ -76,9 +76,9 @@ export default class Song implements SongData {
     }
 
     /**
-     * Creates an AudioResource from this Song.
+     * Creates an AudioResource from this Track.
      */
-    public createAudioResource(): Promise<AudioResource<Song>> {
+    public createAudioResource(): Promise<AudioResource<Track>> {
         return new Promise((resolve, reject) => {
             // i have no idea what this does
             const process = ytdl(
@@ -115,7 +115,7 @@ export default class Song implements SongData {
     }
 
     public static getDefault() {
-        return new Song({
+        return new Track({
             title: "Default",
             artist: "Default",
             url: "gg.com",
@@ -127,9 +127,9 @@ export default class Song implements SongData {
 }
 
 /**
- * This is the data required to create a Song object
+ * This is the data required to create a Track object
  */
-export interface SongData {
+export interface TrackData {
     url: string,
     title: string,
     artist: string,

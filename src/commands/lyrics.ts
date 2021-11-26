@@ -5,10 +5,10 @@ import { GuildMember, MessageEmbed } from "discord.js";
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("lyrics")
-        .setDescription("Get the song's lyrics at a specified queue index. Leave option empty for the current song.")
+        .setDescription("Get a track's lyrics at a specified queue index. Leave option empty for the current one.")
         .addIntegerOption(option => option
             .setName("index")
-            .setDescription("The song's index to fetch the lyrics of. Leave empty for the current song.")
+            .setDescription("The track's index to fetch the lyrics of. Leave empty for the current one.")
             .setRequired(false)),
 
     execute: async helper => {
@@ -30,14 +30,14 @@ module.exports = {
 
         if (service.queue.length <= 0) {
             return await helper.respond(new MessageEmbed()
-                .setAuthor("❌  There are no songs in the queue!")
+                .setAuthor("❌  There are no tracks in the queue!")
                 .setColor("RED"));
         }
 
         // may be null
         let index = helper.getInteractionInteger("index");
 
-        // user wants the current song
+        // user wants the current track
         if (!index) {
             index = 1;
         }
@@ -48,11 +48,11 @@ module.exports = {
                 .setColor("RED"));
         }
 
-        const song = service.queue[index - 1];
+        const track = service.queue[index - 1];
         let lyrics: string;
 
         try {
-            lyrics = await helper.cache.apiHelper.getGeniusLyrics(`${song.title} ${song.artist}`);
+            lyrics = await helper.cache.apiHelper.getGeniusLyrics(`${track.title} ${track.artist}`);
         }
         catch (e) {
             return await helper.respond(new MessageEmbed()
@@ -61,7 +61,7 @@ module.exports = {
         }
 
         return await helper.respond(new MessageEmbed()
-            .setAuthor(`🎤  Lyrics for ${song.title}:`)
+            .setAuthor(`🎤  Lyrics for ${track.title}:`)
             .setDescription(lyrics)
             .setColor("GREYPLE"));
     }
