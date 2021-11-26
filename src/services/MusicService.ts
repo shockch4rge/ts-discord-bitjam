@@ -17,20 +17,21 @@ export default class MusicService {
     public readonly connection: VoiceConnection;
     public readonly player: AudioPlayer;
     public readonly queue: Song[];
+    public loopingState: LoopState;
     private readyLock: boolean;
-    public looping: LoopState;
 
     public constructor(connection: VoiceConnection, cache: GuildCache) {
         this.cache = cache;
         this.connection = connection;
         this.player = createAudioPlayer();
-        this.connection.subscribe(this.player);
-        this.looping = LoopState.OFF;
+        this.loopingState = LoopState.OFF;
         this.queue = [];
         this.readyLock = false;
 
         this.setupPlayerListeners();
         this.setupConnectionListeners();
+
+        this.connection.subscribe(this.player);
     }
 
     private setupConnectionListeners() {
@@ -97,6 +98,7 @@ export default class MusicService {
                 }
             }
         });
+
     }
 
     private setupPlayerListeners() {
@@ -106,7 +108,7 @@ export default class MusicService {
             }
 
             if (newState.status === AudioPlayerStatus.Idle) {
-                switch (this.looping) {
+                switch (this.loopingState) {
                     case LoopState.OFF:
                         this.queue.shift();
 
@@ -148,16 +150,19 @@ export default class MusicService {
 
     }
 
-    public dequeue(fromIndex: number, toIndex: number): Promise<void> {
-        return new Promise(resolve => {
-            if (toIndex <= 0) {
-                this.queue.splice(fromIndex, 1);
+    public remove(fromIndex: number, toIndex: number): Promise<void> {
+        return new Promise((resolve, reject) => {
+            if (this.queue.length === 0) {
+                reject(`There are no songs in the queue!`);
             }
-            else {
-                const range = toIndex - fromIndex;
-                this.queue.splice(fromIndex, range);
+            if (fromIndex < 0 || fromIndex >= this.queue.length) {
+                reject(`Invalid from-index provided: (${fromIndex})`);
+            }
+            if (toIndex < 0 || toIndex >= this.queue.length) {
+                reject(`Invalid to-index provided: (${toIndex})`)
             }
 
+            Arrays.portion(fromIndex, toIndex, this.queue);
             resolve();
         });
     }
@@ -240,20 +245,16 @@ export default class MusicService {
         });
     }
 
-    public toggleLoop() {
-        switch (this.looping) {
-            case LoopState.OFF:
-                this.looping = LoopState.SONG;
-                break;
+    public setLoopingState(state: LoopState): Promise<void> {
+        return new Promise((resolve, reject) => {
+            if (this.loopingState === state) {
+                reject(`The looping state is already set to: (${state})!`)
+            }
 
-            case LoopState.SONG:
-                this.looping = LoopState.QUEUE;
-                break;
+            this.loopingState = state;
+            resolve();
+        });
 
-            case LoopState.QUEUE:
-                this.looping = LoopState.OFF;
-                break;
-        }
     }
 
     public moveSong(atIndex: number, toIndex: number): Promise<void> {
@@ -291,7 +292,7 @@ export default class MusicService {
 }
 
 export enum LoopState {
-    OFF,
-    SONG,
-    QUEUE,
+    OFF = "off",
+    SONG = "song",
+    QUEUE = "queue",
 }

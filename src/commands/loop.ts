@@ -6,7 +6,14 @@ import { LoopState } from "../services/MusicService";
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("loop")
-        .setDescription("Toggle the queue loop. Switches between OFF, SONG & QUEUE."),
+        .setDescription("Choose a looping state for music playing.")
+        .addStringOption(option => option
+            .setName("state")
+            .setDescription("The looping state to switch to.")
+            .setRequired(true)
+            .addChoice("off", LoopState.OFF)
+            .addChoice("song", LoopState.SONG)
+            .addChoice("queue", LoopState.QUEUE)),
 
     execute: async helper => {
         const member = helper.interaction.member as GuildMember;
@@ -25,24 +32,19 @@ module.exports = {
                 .setColor("RED"));
         }
 
-        service.toggleLoop();
+        const loopState = helper.getInteractionString("state")! as LoopState;
 
-        let stateString = "";
-
-        switch (service.looping) {
-            case LoopState.OFF:
-                stateString = "Looping is now off!";
-                break;
-            case LoopState.SONG:
-                stateString = "Looping the song!"
-                break;
-            case LoopState.QUEUE:
-                stateString = "Looping the queue!";
-                break;
+        try {
+            await service.setLoopingState(loopState);
+        }
+        catch (e) {
+            return await helper.respond(new MessageEmbed()
+                .setAuthor(`❌  ${e}`)
+                .setColor("RED"));
         }
 
         await helper.respond(new MessageEmbed()
-            .setAuthor(`✔️  ${stateString}`)
+            .setAuthor(`✔️  Set looping state to: ${loopState}`)
             .setColor("GREEN"))
     }
 

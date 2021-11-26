@@ -14,6 +14,27 @@ export class Arrays {
     }
 
     /**
+     * Splices a portion/range of elements in an array. This method modifies the array.
+     * @param {number} fromIndex
+     * @param {number} toIndex
+     * @param {T[]} array
+     */
+    public static portion<T>(fromIndex: number, toIndex: number, array: T[]) {
+        if (fromIndex < toIndex) {
+            const range = toIndex - fromIndex;
+            array.splice(fromIndex, range);
+        }
+        else if (fromIndex > toIndex) {
+            const range = fromIndex - toIndex;
+            array.splice(toIndex, range);
+        }
+        else {
+            array.splice(fromIndex, 1);
+        }
+    }
+
+
+    /**
      * Remove all instances of a specific element from an array. This method modifies the array.
      * @param {T} searchElement The element to remove
      * @param {T[]} from The element source
@@ -65,7 +86,7 @@ export class Arrays {
 
         if (withIndex === -1) return;
 
-        const searchElement = array[searchIndex];
+        const searchElement = array.at(searchIndex);
 
         if (!searchElement) return;
 
@@ -86,11 +107,5 @@ export class Arrays {
     public static move<T>(fromIndex: number, toIndex: number, array: T[]) {
         const removed = array.splice(fromIndex, 1)[0];
         void array.splice(toIndex, 0, removed)
-    }
-
-    public static shiftAndPush<T>(array: T[]) {
-        if (array.length === 0) return;
-        const element = array.shift()!;
-        array.push(element);
     }
 }
