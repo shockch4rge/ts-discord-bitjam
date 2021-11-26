@@ -32,13 +32,11 @@ export default class Song implements SongData {
                                 .then(resolve)
                                 .catch(reject);
                         }
-
                         else if (url.pathname.includes("album")) {
                             return apiHelper.getSpotifyAlbum(url.pathname.slice(7), requester)
                                 .then(resolve)
                                 .catch(reject);
                         }
-
                         else if (url.pathname.includes("playlist")) {
                             return apiHelper.getSpotifyPlaylist(url.pathname.slice(10), requester)
                                 .then(resolve)
@@ -48,9 +46,16 @@ export default class Song implements SongData {
                         return reject("Invalid Spotify media type!");
 
                     case "www.youtube.com":
-                        return apiHelper.getYoutubeSong(url.searchParams.get("v")!, requester)
-                            .then(resolve)
-                            .catch(reject);
+                        if (!url.searchParams.get("list")) {
+                            return apiHelper.getYoutubeSong(url.searchParams.get("v")!, requester)
+                                .then(resolve)
+                                .catch(reject);
+                        }
+                        else {
+                            return apiHelper.getYoutubePlaylist(url.searchParams.get("list")!, requester)
+                                .then(resolve)
+                                .catch(reject);
+                        }
 
                     case "youtu.be":
                         return apiHelper.getYoutubeSong(url.pathname.slice(1), requester)

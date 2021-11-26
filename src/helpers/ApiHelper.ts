@@ -1,6 +1,7 @@
 import ytdl from "ytdl-core";
 import Song from "../models/Song";
 import SpotifyWebApi from "spotify-web-api-node";
+import ytpl from "ytpl";
 
 const auth = require("../../auth.json");
 
@@ -35,6 +36,19 @@ export class ApiHelper {
             duration: +info.lengthSeconds * 1000,
             requester: requester,
         });
+    }
+
+    public async getYoutubePlaylist(id: string, requester: string): Promise<Song[]> {
+        const playlist = (await ytpl(id)).items;
+
+        return playlist.map(item => new Song({
+            title: item.title,
+            artist: item.author.name,
+            url: `https://youtu.be/${item.id}`,
+            duration: +item.durationSec! * 1000,
+            cover: item.bestThumbnail.url!,
+            requester: requester,
+        }));
     }
 
     public async searchYoutubeVideos(query: string, requester: string): Promise<Song> {
@@ -136,9 +150,9 @@ export class ApiHelper {
         }
 
         const lyrics = (await this.geniusApi.lyrics(song.id)).slice(1) as {
-            part: string;
-            content: string[];
-        }[]
+            part: string,
+            content: string[]
+        }[];
         const lines: string[] = [];
 
         for (const lyric of lyrics) {
