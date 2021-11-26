@@ -1,7 +1,7 @@
 import { InteractionFile } from "../helpers/BotHelper";
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { GuildMember, MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
-import { formatTime } from "../utilities/Utils";
+import { GuildMember, MessageEmbed } from "discord.js";
+import { QueueFormatter } from "../utilities/QueueFormatter";
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -31,45 +31,9 @@ module.exports = {
                 .setColor("GOLD"));
         }
 
-        const queue = service.queue;
-        const embed = new MessageEmbed();
-        const currentSong = queue[0];
-        const numbers = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
+        const embed = new QueueFormatter(service.queue).getEmbed();
 
-        if (queue.length > 1) {
-            embed.addField(`___`, "...");
-
-            // append songs top down from newest
-            for (let i = 1; i < queue.length; i++) {
-                // append up to 9 fields
-                if (i >= 9) break;
-
-                const song = queue[i];
-                embed.addField(
-                    `> ${numbers[i]} :   ${song.title} :: ${song.artist}`,
-                    `Duration: ${formatTime(song.duration)} - Requested by <@!${song.requester}>`
-                );
-            }
-        }
-
-        embed
-            .setAuthor(`🎵  Current song:`)
-            .setTitle(`[${formatTime(currentSong.duration)}] - ${currentSong.title} :: ${currentSong.artist}`)
-            .setImage(currentSong.cover)
-            .setFooter(`🗃️ There ${queue.length === 1 ? "is 1 song" : `are ${queue.length} songs`} in the queue.`)
-            .setColor("GREYPLE");
-
-        return await helper.interaction.followUp({
-            embeds: [embed],
-            components: [new MessageActionRow()
-                .addComponents([
-                    new MessageButton()
-                        .setCustomId("btn-select-page")
-                        .setLabel("Select Page")
-                        .setStyle("PRIMARY")
-                        .setDisabled(),
-                ])],
-        });
+        return await helper.respond(embed);
     }
 
 } as InteractionFile;
