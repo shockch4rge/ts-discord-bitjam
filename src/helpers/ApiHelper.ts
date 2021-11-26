@@ -1,7 +1,6 @@
 import ytdl from "ytdl-core";
 import Song from "../models/Song";
 import SpotifyWebApi from "spotify-web-api-node";
-import { delay } from "../utilities/Utils";
 
 const auth = require("../../auth.json");
 
@@ -11,10 +10,10 @@ export class ApiHelper {
     private readonly geniusApi: any;
 
     public constructor() {
-        this.spotifyApi = new SpotifyWebApi(auth.spotify);
-        this.spotifyApi.setAccessToken(auth.spotify.accessToken);
         this.youtubeMusicApi = new (require("youtube-music-api"))();
         this.youtubeMusicApi.initalize();
+        this.spotifyApi = new SpotifyWebApi(auth.spotify);
+        this.spotifyApi.setAccessToken(auth.spotify.accessToken);
         this.geniusApi = new (require("node-genius-api"))(auth.genius.accessToken);
     }
 
@@ -50,8 +49,6 @@ export class ApiHelper {
             throw new Error(`Could not fetch the Spotify track. Check the URL?`);
         }
 
-        // buffer time to initialise api
-        await delay(1000);
         const result = (
             await this.youtubeMusicApi.search(`${track.name} ${track.artists[0].name}`, "song")
         ).content[0];
@@ -79,7 +76,7 @@ export class ApiHelper {
             throw new Error(`Invalid URL! ${e.message}`)
         }
 
-        // map each track into a song
+        // map each track into a song promise
         const songs: Promise<Song>[] = album
             .map(track => this.getSpotifySong(track.id, requester));
 
