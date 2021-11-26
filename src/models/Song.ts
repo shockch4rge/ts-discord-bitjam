@@ -32,11 +32,13 @@ export default class Song implements SongData {
                                 .then(resolve)
                                 .catch(reject);
                         }
+
                         else if (url.pathname.includes("album")) {
                             return apiHelper.getSpotifyAlbum(url.pathname.slice(7), requester)
                                 .then(resolve)
                                 .catch(reject);
                         }
+
                         else if (url.pathname.includes("playlist")) {
                             return apiHelper.getSpotifyPlaylist(url.pathname.slice(10), requester)
                                 .then(resolve)
@@ -61,10 +63,10 @@ export default class Song implements SongData {
             }
                 // if it fails, search YouTube instead
             catch (err) {
-
+                return apiHelper.searchYoutubeVideos(query, requester)
+                    .then(resolve)
+                    .catch(reject);
             }
-
-
         });
     }
 

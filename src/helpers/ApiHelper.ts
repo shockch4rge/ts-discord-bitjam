@@ -37,6 +37,19 @@ export class ApiHelper {
         });
     }
 
+    public async searchYoutubeVideos(query: string, requester: string): Promise<Song> {
+        const video = (await this.youtubeMusicApi.search(query, "video")).content[0];
+
+        return new Song({
+            title: video.name,
+            artist: video.author,
+            url: `https://youtu.be/${video.videoId}`,
+            cover: video.thumbnails.url,
+            duration: video.duration,
+            requester: requester,
+        });
+    }
+
     public async getSpotifySong(id: string, requester: string): Promise<Song> {
         await this.refreshSpotify();
 
@@ -119,7 +132,7 @@ export class ApiHelper {
         const song = (await this.geniusApi.search(query))[0]?.result;
 
         if (!song) {
-            throw new Error("");
+            throw new Error("Could not find lyrics for this song!");
         }
 
         const lyrics = (await this.geniusApi.lyrics(song.id)).slice(1) as {
