@@ -273,11 +273,6 @@ export default class MusicService {
         }
     }
 
-    /**
-     * CACHE IS ONLY USED HERE TO DELETE THE SERVICE.
-     * DO NOT USE CACHE FOR ANYTHING ELSE
-     * @private
-     */
     public destroy() {
         delete this.cache.service;
     }

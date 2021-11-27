@@ -26,6 +26,7 @@ module.exports = {
             });
 
             helper.cache.service = new MusicService(connection, helper.cache);
+            await helper.cache.affirmConnectionMinutely(member.voice.channelId!);
         }
 
         const service = helper.cache.service;
