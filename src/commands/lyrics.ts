@@ -44,7 +44,7 @@ module.exports = {
 
         if (index <= 0 || index > service.queue.length) {
             return await helper.respond(new MessageEmbed()
-                .setAuthor(`❌  Invalid index provided: (${index})`)
+                .setAuthor(`❌  Invalid index provided: ${index} (min: 1)`)
                 .setColor("RED"));
         }
 
