@@ -25,7 +25,7 @@ This was originally written in JavaScript, but I got really fed up with loose ty
 - WIP
 
 # Notes
-Creating a track's audio resource can be extremely buggy when working with ytdl-core or ytdl. Most of the time, the track cuts out halfway and throws an error. This has been a known issue on discordjs's part (I think) and they came out with a solution.
+Creating a track's audio resource can be extremely buggy when working with ytdl-core or ytdl. Most of the time, the track cuts out halfway and throws an error. This has been a known issue on ytdl's part and discordjs came up with a solution.
 
 Here's an extract from a music bot example that they [thankfully provided on GitHub]:
 ```ts
@@ -71,7 +71,7 @@ export default class Track {
 }
 ```
 
-From what I know, audio quality is significantly improved and the midway crashing is gone, so I definitely recommend using this.
+From what I know, audio quality is significantly improved and the midway crashing is gone, so I greatly recommend using this.
 
 [migrated over from JavaScript]: https://github.com/Shockch4rge/js-discord-bitjam
 [`discord.js`]: https://www.npmjs.com/package/discord.js
