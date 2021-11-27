@@ -8,11 +8,11 @@ module.exports = {
         .setDescription("Move a track at an index to another one.")
         .addIntegerOption(option => option
             .setName("at-index")
-            .setDescription("The index of the track to move. (min = 1)")
+            .setDescription("The index of the track to move. (min = 2)")
             .setRequired(true))
         .addIntegerOption(option => option
             .setName("to-index")
-            .setDescription("Move the track to this index. (max = queue length - 1)")
+            .setDescription("Move the track to this index. (min = 2)")
             .setRequired(true)),
 
     execute: async helper => {
@@ -45,7 +45,7 @@ module.exports = {
         }
 
         return await helper.respond(new MessageEmbed()
-            .setAuthor(`✔️  Moved track at index (${atIndex}) to (${toIndex})`)
+            .setAuthor(`✔️  Moved track at index (${atIndex + 1}) to (${toIndex + 1})`)
             .setColor("GREEN"));
     }
 } as InteractionFile;

@@ -21,6 +21,8 @@ export default class Track implements TrackData {
 
     public static from(query: string, apiHelper: ApiHelper, requester: string): Promise<Track | Track[]> {
         return new Promise((resolve, reject) => {
+            let possibleTracks: Promise<Track | Track[]>
+
             // try to get a url from the query
             try {
                 const url = new URL(query);
@@ -28,50 +30,45 @@ export default class Track implements TrackData {
                 switch (url.hostname) {
                     case "open.spotify.com":
                         if (url.pathname.includes("track")) {
-                            return apiHelper.getSpotifyTrack(url.pathname.slice(7), requester)
-                                .then(resolve)
-                                .catch(reject);
+                            possibleTracks = apiHelper.getSpotifyTrack(url.pathname.slice(7), requester);
                         }
                         else if (url.pathname.includes("album")) {
-                            return apiHelper.getSpotifyAlbum(url.pathname.slice(7), requester)
-                                .then(resolve)
-                                .catch(reject);
+                            possibleTracks = apiHelper.getSpotifyAlbum(url.pathname.slice(7), requester);
                         }
                         else if (url.pathname.includes("playlist")) {
-                            return apiHelper.getSpotifyPlaylist(url.pathname.slice(10), requester)
-                                .then(resolve)
-                                .catch(reject);
-                        }
-
-                        return reject("Invalid Spotify media type!");
-
-                    case "www.youtube.com":
-                        if (!url.searchParams.get("list")) {
-                            return apiHelper.getYoutubeTrack(url.searchParams.get("v")!, requester)
-                                .then(resolve)
-                                .catch(reject);
+                            possibleTracks = apiHelper.getSpotifyPlaylist(url.pathname.slice(10), requester);
                         }
                         else {
-                            return apiHelper.getYoutubePlaylist(url.searchParams.get("list")!, requester)
-                                .then(resolve)
-                                .catch(reject);
+                            return reject("Invalid Spotify media type!");
                         }
+                        break;
+
+                    case "www.youtube.com":
+                        if (!url.searchParams.get("list") && url.searchParams.get("v")) {
+                            possibleTracks = apiHelper.getYoutubeTrack(url.searchParams.get("v")!, requester)
+                        }
+                        else if (url.searchParams.get("list") && url.searchParams.get("v")) {
+                            possibleTracks = apiHelper.getYoutubePlaylist(url.searchParams.get("list")!, requester);
+                        }
+                        else {
+                            return reject("Invalid YouTube media type!");
+                        }
+                        break;
 
                     case "youtu.be":
-                        return apiHelper.getYoutubeTrack(url.pathname.slice(1), requester)
-                            .then(resolve)
-                            .catch(reject);
+                        possibleTracks = apiHelper.getYoutubeTrack(url.pathname.slice(1), requester);
+                        break;
 
                     default:
-                        reject("Provide a Youtube or Spotify link!");
+                        return reject("Provide a Youtube or Spotify link!");
                 }
             }
                 // if it fails, search YouTube instead
             catch (err) {
-                return apiHelper.searchYoutubeVideos(query, requester)
-                    .then(resolve)
-                    .catch(reject);
+                possibleTracks = apiHelper.searchYoutubeVideos(query, requester)
             }
+
+            return possibleTracks!.then(resolve).catch(reject);
         });
     }
 

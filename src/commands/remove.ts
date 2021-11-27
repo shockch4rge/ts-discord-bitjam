@@ -8,11 +8,11 @@ module.exports = {
         .setDescription("Remove a single/range of tracks from specified indexes.")
         .addIntegerOption(option => option
             .setName("from-index")
-            .setDescription("The starting index to remove tracks from. Leave only this option filled to remove one track. (min: 1)")
+            .setDescription("Start removing tracks at this index. Fill only this option to remove one track. (min: 2)")
             .setRequired(true))
         .addIntegerOption(option => option
             .setName("to-index")
-            .setDescription("The range bound to remove tracks in. Leave this empty to remove only one. (max: queue length - 1)")
+            .setDescription("Remove tracks up to this index. Leave empty to remove only one. (max: queue length - 1)")
             .setRequired(false)),
 
     execute: async helper => {

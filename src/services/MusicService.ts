@@ -155,10 +155,10 @@ export default class MusicService {
             if (this.queue.length === 0) {
                 reject(`There are no tracks in the queue!`);
             }
-            if (fromIndex < 0 || fromIndex >= this.queue.length) {
+            if (fromIndex <= 0 || fromIndex >= this.queue.length) {
                 reject(`Invalid from-index provided: (${fromIndex})`);
             }
-            if (toIndex < 0 || toIndex >= this.queue.length) {
+            if (toIndex <= 0 || toIndex >= this.queue.length) {
                 reject(`Invalid to-index provided: (${toIndex})`)
             }
 
@@ -257,7 +257,7 @@ export default class MusicService {
 
     public moveTrack(atIndex: number, toIndex: number): Promise<void> {
         return new Promise((resolve, reject) => {
-            if (atIndex < 0 || toIndex >= this.queue.length) {
+            if (atIndex <= 1 || toIndex >= this.queue.length) {
                 reject(`Invalid index! Provided (${atIndex}) and (${toIndex})`);
             }
 
