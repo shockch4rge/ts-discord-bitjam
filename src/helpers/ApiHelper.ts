@@ -149,7 +149,7 @@ export class ApiHelper {
             throw new Error("Could not find lyrics for this track!");
         }
 
-        const lyrics = (await this.geniusApi.lyrics(track.id)).slice(1) as {
+        const lyrics = (await this.geniusApi.lyrics(track.id)) as {
             part: string,
             content: string[]
         }[];
