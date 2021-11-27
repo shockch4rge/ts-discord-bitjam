@@ -56,6 +56,8 @@ export class Arrays {
      * @param {T[]} array The array to shuffle
      */
     public static shuffle<T>(array: T[]) {
+        if (array.length === 1) return;
+
         for (let i = array.length - 1; i > 1; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [array[i], array[j]] = [array[j], array[i]];
@@ -73,21 +75,19 @@ export class Arrays {
     /**
      * Swap an element with another one in an array. Doesn't do anything if the elements are not found.
      * @param searchIndex
-     * @param {T} _with The element to swap with
+     * @param withIndex
      * @param {T[]} array The array to modify
      */
-    public static swap<T>(searchIndex: number, _with: T, array: T[]): void {
+    public static swap<T>(searchIndex: number, withIndex: number, array: T[]): void {
         if (searchIndex < 0 || searchIndex >= array.length) return;
 
-        const withIndex = array.indexOf(_with);
-
-        if (withIndex === -1) return;
-
         const searchElement = array.at(searchIndex);
+        const withElement = array.at(withIndex);
 
         if (!searchElement) return;
+        if (!withElement) return;
 
-        void array.splice(searchIndex,  1, _with);
+        void array.splice(searchIndex,  1, withElement);
         void array.splice(withIndex, 1, searchElement);
     }
 
@@ -102,6 +102,8 @@ export class Arrays {
     }
 
     public static move<T>(fromIndex: number, toIndex: number, array: T[]) {
+        if (fromIndex === toIndex) return;
+
         const removed = array.splice(fromIndex, 1)[0];
         void array.splice(toIndex, 0, removed)
     }
