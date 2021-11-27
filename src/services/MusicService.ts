@@ -74,7 +74,8 @@ export default class MusicService {
                 /**
                  * Once destroyed, stop the subscription.
                  */
-                this.stop().catch(() => {});
+                this.stop().catch(() => {
+                });
                 this.destroy();
             }
             else if (
@@ -136,151 +137,124 @@ export default class MusicService {
         });
     }
 
-    public enqueue(tracks: Track | Track[]): Promise<void> {
-        return new Promise(resolve => {
-            if (Array.isArray(tracks)) {
-                this.queue.push(...tracks);
-            }
-            else {
-                this.queue.push(tracks);
-            }
-
-            resolve();
-        });
-
+    public async enqueue(tracks: Track | Track[]): Promise<void> {
+        if (Array.isArray(tracks)) {
+            this.queue.push(...tracks);
+        }
+        else {
+            this.queue.push(tracks);
+        }
     }
 
-    public remove(fromIndex: number, toIndex: number): Promise<void> {
-        return new Promise((resolve, reject) => {
-            if (this.queue.length === 0) {
-                reject(`There are no tracks in the queue!`);
-            }
-            if (fromIndex <= 0 || fromIndex >= this.queue.length) {
-                reject(`Invalid from-index provided: (${fromIndex})`);
-            }
-            if (toIndex <= 0 || toIndex >= this.queue.length) {
-                reject(`Invalid to-index provided: (${toIndex})`)
-            }
+    public async play(): Promise<void> {
+        if (this.player.state.status === AudioPlayerStatus.Playing) {
+            return;
+        }
 
-            Arrays.portion(fromIndex, toIndex, this.queue);
-            resolve();
-        });
+        try {
+            const resource = await this.queue[0].createAudioResource();
+            this.player.play(resource);
+        }
+        catch {
+            throw new Error("There was an error creating the track.")
+        }
     }
 
-    public play(): Promise<void> {
-        return new Promise((resolve, reject) => {
-            if (this.player.state.status === AudioPlayerStatus.Playing) {
-                reject();
-                return;
-            }
+    public async skip(): Promise<void> {
+        if (this.queue.length <= 0) {
+            throw new Error("There are no more tracks left in the queue!");
+        }
 
-            this.queue[0].createAudioResource()
-                .then(resource => {
-                    this.player.play(resource);
-                    resolve();
-                });
+        // get the next track after we've shifted the first one out
+        this.queue.shift();
+        const nextTrack = this.queue.at(0);
 
-        });
+        // if it doesn't exist, we've reached the end of the queue
+        if (!nextTrack) {
+            this.player.stop();
+            throw new Error("Reached the end of the queue!");
+        }
+
+        try {
+            const resource = await nextTrack.createAudioResource();
+            this.player.play(resource);
+        }
+        catch {}
     }
 
-    public skip(): Promise<void> {
-        return new Promise((resolve, reject) => {
-            if (this.queue.length <= 0) {
-                return reject("There are no more tracks left in the queue!");
-            }
+    public async pause(): Promise<void> {
+        if (this.player.state.status !== AudioPlayerStatus.Paused) {
+            throw new Error("The bot is still paused!");
+        }
 
-            // get the next track after we've shifted the first one out
-            this.queue.shift();
-            const nextTrack = this.queue.at(0);
+        const paused = this.player.pause();
 
-            // if it doesn't exist, we've reached the end of the queue
-            if (!nextTrack) {
-                this.player.stop();
-                return reject("Reached the end of the queue!");
-            }
-
-            nextTrack.createAudioResource()
-                .then(resource => {
-                    this.player.play(resource);
-                    resolve();
-                })
-                .catch(() => {
-                    reject("Failed to create audio resource.");
-                });
-        });
+        if (!paused) {
+            throw new Error("There was an error pausing!");
+        }
     }
 
-    public pause(): Promise<void> {
-        return new Promise((resolve, reject) => {
-            if (this.player.state.status !== AudioPlayerStatus.Paused) {
-                reject("The bot is still paused!");
-            }
+    public async resume(): Promise<void> {
+        if (this.player.state.status !== AudioPlayerStatus.Paused) {
+            throw new Error("The bot is still playing!");
+        }
 
-            this.player.pause();
-            resolve();
-        });
+        const resumed = this.player.unpause();
+
+        if (!resumed) {
+            throw new Error("There was an error resuming!")
+        }
     }
 
-    public resume(): Promise<void> {
-        return new Promise((resolve, reject) => {
-            if (this.player.state.status !== AudioPlayerStatus.Paused) {
-                reject("The bot is still playing!");
-            }
+    public async shuffle(): Promise<void> {
+        if (this.queue.length <= 0) {
+            throw new Error("There are no songs in the queue!");
+        }
 
-            this.player.unpause();
-            resolve();
-        });
+        Arrays.shuffle(this.queue);
     }
 
-    public shuffle(): Promise<void> {
-        return new Promise((resolve, reject) => {
-            if (this.queue.length <= 0) {
-                reject("There are no tracks in the queue!");
-            }
+    public async remove(fromIndex: number, toIndex: number): Promise<void> {
+        if (this.queue.length === 0) {
+            throw new Error(`There are no tracks in the queue!`);
+        }
+        if (fromIndex <= 0 || fromIndex >= this.queue.length) {
+            throw new Error(`Invalid from-index provided: (${fromIndex})`);
+        }
+        if (toIndex <= 0 || toIndex >= this.queue.length) {
+            throw new Error(`Invalid to-index provided: (${toIndex})`)
+        }
 
-            Arrays.shuffle(this.queue);
-            resolve();
-        });
+        Arrays.portion(fromIndex, toIndex, this.queue);
     }
 
-    public setLoopingState(state: LoopState): Promise<void> {
-        return new Promise((resolve, reject) => {
-            if (this.loopingState === state) {
-                reject(`The looping state is already set to: (${state})!`)
-            }
+    public async setLoopingState(state: LoopState): Promise<void> {
+        if (this.loopingState === state) {
+            throw new Error(`The looping state is already set to: (${state})!`)
+        }
 
-            this.loopingState = state;
-            resolve();
-        });
-
+        this.loopingState = state;
     }
 
-    public moveTrack(atIndex: number, toIndex: number): Promise<void> {
-        return new Promise((resolve, reject) => {
-            if (atIndex <= 1 || toIndex >= this.queue.length) {
-                reject(`Invalid index! Provided (${atIndex}) and (${toIndex})`);
-            }
+    public async moveTrack(atIndex: number, toIndex: number): Promise<void> {
+        if (atIndex <= 1 || toIndex >= this.queue.length) {
+            throw new Error(`Invalid index! Provided (${atIndex}) and (${toIndex})`);
+        }
 
-            Arrays.move(atIndex, toIndex, this.queue);
-            resolve();
-        });
+        Arrays.move(atIndex, toIndex, this.queue);
     }
 
-    public stop(): Promise<void> {
-        return new Promise((resolve, reject) => {
-            if (this.player.state.status === AudioPlayerStatus.Idle) {
-                reject("The bot isn't playing any music!");
-            }
+    public async stop(): Promise<void> {
+        if (this.player.state.status === AudioPlayerStatus.Idle) {
+            throw new Error("The bot isn't playing any music!");
+        }
 
-            Arrays.clear(this.queue);
-            const stopSuccess = this.player.stop(true);
+        Arrays.clear(this.queue);
+        const stopped = this.player.stop(true);
 
-            if (!stopSuccess) {
-                reject("There was an error stopping the player.");
-            }
-
-            resolve();
-        })
+        if (!stopped) {
+            throw new Error("There was an error stopping the player.");
+        }
     }
 
     /**
