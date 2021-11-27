@@ -32,7 +32,7 @@ export default class GuildCache {
      */
     public async affirmConnectionMinutely(channelId: string) {
         const interval = 2;
-        let sessionMinutes: 0;
+        let sessionMinutes = 0;
 
         const timer = AfterEvery(interval).minutes(async () => {
             const channel = this.guild.channels.cache.get(this.guild.me!.voice.channelId!) as GuildChannel;
@@ -42,11 +42,11 @@ export default class GuildCache {
                 console.log(`Performed check on voice connection.`);
 
                 if (channel.members.size === 1 && channel.members.get(this.bot.user!.id)) {
-                    await this.unNick();
                     await this.guild.me!.voice.disconnect();
+                    await this.unNick();
                     this.service!.destroy();
-                    sessionMinutes = 0;
                     console.log(`Disconnected from the voice channel. Session time: ${sessionMinutes} minutes`);
+                    sessionMinutes = 0;
                     timer();
                 }
 
