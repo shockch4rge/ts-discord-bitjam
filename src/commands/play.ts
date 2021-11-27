@@ -30,10 +30,12 @@ module.exports = {
 
         const service = helper.cache.service;
         const query = helper.getInteractionString("query")!;
+        let tracks: Track | Track[];
 
         try {
-            const tracks = await Track.from(query, helper.cache.apiHelper, member.id);
+            tracks = await Track.from(query, helper.cache.apiHelper, member.id);
             await service.enqueue(tracks);
+            await service.play();
         }
         catch (e) {
             return await helper.respond(new MessageEmbed()
@@ -42,18 +44,15 @@ module.exports = {
                 .setColor("RED"));
         }
 
-        try {
-            await service.play();
-        }
-        // appended to the queue instead
-        catch {
+        if (Array.isArray(tracks)) {
             return await helper.respond(new MessageEmbed()
-                .setAuthor("✔️  Appended the tracks(s) to the queue!")
+                .setAuthor(`✔️  Appended ${tracks.length} tracks to the queue!`)
                 .setColor("GREEN"));
         }
-
-        return await helper.respond(new MessageEmbed()
-            .setAuthor("✔️  Playing...")
-            .setColor("GREEN"));
+        else {
+            return await helper.respond(new MessageEmbed()
+                .setAuthor(`✔️  Appended '${tracks.title} - ${tracks.artist}' to the queue!`)
+                .setColor("GREEN"));
+        }
     }
 } as InteractionFile;
