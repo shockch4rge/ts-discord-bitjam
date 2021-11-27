@@ -134,6 +134,22 @@ export default class MusicService {
                         break;
                 }
             }
+
+            switch (newState.status) {
+                case AudioPlayerStatus.Idle:
+                case AudioPlayerStatus.Buffering:
+                    await this.cache.nick(`⏱️  ${this.cache.bot.user!.username} | Idle`);
+                    break;
+
+                case AudioPlayerStatus.Paused:
+                case AudioPlayerStatus.AutoPaused:
+                    await this.cache.nick(`⏸️  ${this.cache.bot.user!.username} | Paused`);
+                    break;
+
+                case AudioPlayerStatus.Playing:
+                    await this.cache.nick(`▶️  ${this.cache.bot.user!.username} | Playing`);
+                    break;
+            }
         });
     }
 
@@ -183,7 +199,7 @@ export default class MusicService {
     }
 
     public async pause(): Promise<void> {
-        if (this.player.state.status !== AudioPlayerStatus.Paused) {
+        if (this.player.state.status === AudioPlayerStatus.Paused) {
             throw new Error("The bot is still paused!");
         }
 
@@ -195,7 +211,7 @@ export default class MusicService {
     }
 
     public async resume(): Promise<void> {
-        if (this.player.state.status !== AudioPlayerStatus.Paused) {
+        if (this.player.state.status === AudioPlayerStatus.Playing) {
             throw new Error("The bot is still playing!");
         }
 
@@ -262,7 +278,7 @@ export default class MusicService {
      * DO NOT USE CACHE FOR ANYTHING ELSE
      * @private
      */
-    private destroy() {
+    public destroy() {
         delete this.cache.service;
     }
 
