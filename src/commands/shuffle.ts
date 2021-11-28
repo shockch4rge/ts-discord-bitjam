@@ -27,9 +27,9 @@ module.exports = {
         try {
             await service.shuffle();
         }
-        catch (e) {
+        catch ({ msg }) {
             return await helper.respond(new MessageEmbed()
-                .setAuthor(`❌  ${e}`)
+                .setAuthor(`❌  ${msg}`)
                 .setColor("RED"));
         }
 

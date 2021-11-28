@@ -38,9 +38,9 @@ module.exports = {
         try {
             await service.moveTrack(atIndex, toIndex);
         }
-        catch (e) {
+        catch ({ msg }) {
             return await helper.respond(new MessageEmbed()
-                .setAuthor(`❌  ${e}`)
+                .setAuthor(`❌  ${msg}`)
                 .setColor("RED"));
         }
 

@@ -38,10 +38,9 @@ module.exports = {
             await service.enqueue(tracks);
             await service.play();
         }
-        catch (e) {
+        catch ({ msg }) {
             return await helper.respond(new MessageEmbed()
-                // @ts-ignore
-                .setAuthor(`❌  ${e.msg ?? e}`)
+                .setAuthor(`❌  ${msg}`)
                 .setColor("RED"));
         }
 
