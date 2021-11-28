@@ -41,10 +41,10 @@ export default class GuildCache {
                 sessionMinutes += interval;
                 console.log(`Performed check on voice connection.`);
 
-                if (channel.members.size === 1 && channel.members.get(this.bot.user!.id)) {
+                if (channel.members.size === 1 && channel.members.get(this.guild.me!.id)) {
                     await this.guild.me!.voice.disconnect();
                     await this.unNick();
-                    this.service!.destroy();
+                    delete this.service;
                     console.log(`Disconnected from the voice channel. Session time: ${sessionMinutes} minutes`);
                     sessionMinutes = 0;
                     timer();
