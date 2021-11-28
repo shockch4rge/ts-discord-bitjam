@@ -77,21 +77,7 @@ export default class Track implements TrackData {
      */
     public createAudioResource(settings: keyof typeof AudioQuality): Promise<AudioResource<Track>> {
         return new Promise((resolve, reject) => {
-            let frequency: string;
-            let bitrate: string;
-            let quality: string;
-
-            switch (settings) {
-                case "HIGH":
-                    [frequency, bitrate, quality] = AudioQuality.HIGH;
-                    break;
-                case "MEDIUM":
-                    [frequency, bitrate, quality] = AudioQuality.MEDIUM;
-                    break;
-                case "LOW":
-                    [frequency, bitrate, quality] = AudioQuality.LOW;
-                    break;
-            }
+            const [frequency, bitrate, quality] = AudioQuality[settings];
 
             // i have no idea what this does
             const process = ytdl(
