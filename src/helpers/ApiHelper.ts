@@ -19,21 +19,21 @@ export class ApiHelper {
     }
 
     public async getYoutubeTrack(id: string, requester: string): Promise<Track> {
-        let info = null;
+        let video = null;
 
         try {
-            info = (await ytdl.getBasicInfo(id)).videoDetails;
+            video = (await ytdl.getBasicInfo(id)).videoDetails;
         }
         catch {
             throw new Error(`Invalid link! No such video ID found: ${id}`);
         }
 
         return new Track({
-            title: info.title,
-            artist: info.author.name,
-            url: `https://youtu.be/${info.videoId}`,
-            cover: info.thumbnails[0].url,
-            duration: +info.lengthSeconds * 1000,
+            title: video.title,
+            artist: video.author.name,
+            url: `https://youtu.be/${video.videoId}`,
+            cover: video.thumbnails[0].url,
+            duration: +video.lengthSeconds * 1000,
             requester: requester,
         });
     }
