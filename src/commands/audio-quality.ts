@@ -7,13 +7,13 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName("audio-quality")
         .setDescription("Adjust the streaming quality of the resource.")
-        .addIntegerOption(option => option
+        .addStringOption(option => option
             .setName("quality")
             .setDescription("Choose the desired streaming quality. (low = 16000hz, medium = 32000hz, high = 48000hz)")
             .setRequired(true)
-            .addChoice("low", AudioQuality.LOW)
-            .addChoice("medium", AudioQuality.MEDIUM)
-            .addChoice("high", AudioQuality.HIGH)),
+            .addChoice("low", "LOW") // keyof typeof AudioQuality
+            .addChoice("medium", "MEDIUM")
+            .addChoice("high", "HIGH")),
 
     execute: async helper => {
         const member = helper.interaction.member as GuildMember;
@@ -32,14 +32,14 @@ module.exports = {
                 .setColor("RED"));
         }
 
-        const audioQuality = helper.getInteractionInteger("quality")! as AudioQuality;
+        const audioQuality = helper.getInteractionString("quality")! as keyof typeof AudioQuality;
 
         try {
             await service.setAudioQuality(audioQuality);
         }
-        catch (e) {
+        catch ({ msg }) {
             return await helper.respond(new MessageEmbed()
-                .setAuthor(`❌  ${e}`)
+                .setAuthor(`❌  ${msg}`)
                 .setColor("RED"));
         }
 

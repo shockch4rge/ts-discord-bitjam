@@ -75,16 +75,32 @@ export default class Track implements TrackData {
     /**
      * Creates an AudioResource from this Track.
      */
-    public createAudioResource(quality: AudioQuality): Promise<AudioResource<Track>> {
+    public createAudioResource(settings: keyof typeof AudioQuality): Promise<AudioResource<Track>> {
         return new Promise((resolve, reject) => {
+            let frequency: string;
+            let bitrate: string;
+            let quality: string;
+
+            switch (settings) {
+                case "HIGH":
+                    [frequency, bitrate, quality] = AudioQuality.HIGH;
+                    break;
+                case "MEDIUM":
+                    [frequency, bitrate, quality] = AudioQuality.MEDIUM;
+                    break;
+                case "LOW":
+                    [frequency, bitrate, quality] = AudioQuality.LOW;
+                    break;
+            }
+
             // i have no idea what this does
             const process = ytdl(
                 this.url,
                 {
                     o: '-',
-                    q: '0',
-                    f: `bestaudio[ext=webm+acodec=opus+asr=${quality}]/bestaudio`,
-                    r: '100K',
+                    q: quality,
+                    f: `bestaudio[ext=webm+acodec=opus+asr=${frequency}]/bestaudio`,
+                    r: bitrate,
                 },
                 { stdio: ['ignore', 'pipe', 'ignore'] },
             );
@@ -119,7 +135,7 @@ export default class Track implements TrackData {
             cover: "https://i.ytimg.com/vi/uzP7EHVSNsQ/hq720.jpg?sqp=-oaymwEXCNAFEJQDSFryq4qpAwkIARUAAIhCGAE=&rs=AOn4CLCWDy1hiAmJLHesM4DdcDgxrskCSQ",
             requester: "Requester",
             duration: 123456
-        })
+        });
     }
 }
 
@@ -135,8 +151,8 @@ export interface TrackData {
     requester: string,
 }
 
-export enum AudioQuality {
-    LOW = 16000,
-    MEDIUM = 32000,
-    HIGH = 48000
-}
+export const AudioQuality = {
+    LOW: ["16000", "32K", "5"],
+    MEDIUM: ["32000", "64K", "3"],
+    HIGH: ["48000", "128K", "0"],
+} as const

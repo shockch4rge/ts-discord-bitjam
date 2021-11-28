@@ -18,7 +18,7 @@ export default class MusicService {
     public readonly player: AudioPlayer;
     public readonly queue: Track[];
     public loopingState: LoopState;
-    public audioQuality: AudioQuality;
+    public audioQuality: keyof typeof AudioQuality;
     private readyLock: boolean;
 
     public constructor(connection: VoiceConnection, cache: GuildCache) {
@@ -28,7 +28,7 @@ export default class MusicService {
         this.loopingState = LoopState.OFF;
         this.queue = [];
         this.readyLock = false;
-        this.audioQuality = AudioQuality.HIGH;
+        this.audioQuality = "HIGH";
 
         this.setupPlayerListeners();
         this.setupConnectionListeners();
@@ -254,9 +254,9 @@ export default class MusicService {
         this.loopingState = state;
     }
 
-    public async setAudioQuality(quality: AudioQuality) {
+    public async setAudioQuality(quality: keyof typeof AudioQuality) {
         if (this.audioQuality === quality) {
-            throw new Error(`The audio quality is already set to: ${quality}hz.`);
+            throw new Error(`The audio quality is already set to: ${quality}.`);
         }
 
         this.audioQuality = quality;
@@ -285,7 +285,7 @@ export default class MusicService {
 }
 
 export enum LoopState {
-    OFF = "off",
-    TRACK = "track",
-    QUEUE = "queue",
+    OFF = "OFF",
+    TRACK = "TRACK",
+    QUEUE = "QUEUE",
 }
