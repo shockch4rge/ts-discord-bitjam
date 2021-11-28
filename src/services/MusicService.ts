@@ -7,7 +7,7 @@ import {
     VoiceConnectionDisconnectReason,
     VoiceConnectionStatus
 } from "@discordjs/voice";
-import Track from "../models/Track";
+import Track, { AudioQuality } from "../models/Track";
 import { Arrays } from "../utilities/Arrays";
 import GuildCache from "../db/GuildCache";
 import { delay } from "../utilities/Utils";
@@ -18,6 +18,7 @@ export default class MusicService {
     public readonly player: AudioPlayer;
     public readonly queue: Track[];
     public loopingState: LoopState;
+    public audioQuality: AudioQuality;
     private readyLock: boolean;
 
     public constructor(connection: VoiceConnection, cache: GuildCache) {
@@ -27,6 +28,7 @@ export default class MusicService {
         this.loopingState = LoopState.OFF;
         this.queue = [];
         this.readyLock = false;
+        this.audioQuality = AudioQuality.HIGH;
 
         this.setupPlayerListeners();
         this.setupConnectionListeners();
@@ -52,7 +54,7 @@ export default class MusicService {
                     catch {
                         // Probably removed from voice channel
                         this.connection.destroy();
-                        this.destroy();
+                        delete this.cache.service;
                     }
                 }
                 else if (this.connection.rejoinAttempts < 5) {
@@ -67,7 +69,7 @@ export default class MusicService {
                      * The disconnect in this case may be recoverable, but we have no more remaining attempts - destroy.
                      */
                     this.connection.destroy();
-                    this.destroy();
+                    delete this.cache.service;
                 }
             }
             else if (newState.status === VoiceConnectionStatus.Destroyed) {
@@ -76,7 +78,7 @@ export default class MusicService {
                  */
                 this.stop().catch(() => {
                 });
-                this.destroy();
+                delete this.cache.service;
             }
             else if (
                 !this.readyLock &&
@@ -168,7 +170,7 @@ export default class MusicService {
         }
 
         try {
-            const resource = await this.queue[0].createAudioResource();
+            const resource = await this.queue[0].createAudioResource(this.audioQuality);
             this.player.play(resource);
         }
         catch {
@@ -192,7 +194,7 @@ export default class MusicService {
         }
 
         try {
-            const resource = await nextTrack.createAudioResource();
+            const resource = await nextTrack.createAudioResource(this.audioQuality);
             this.player.play(resource);
         }
         catch {}
@@ -246,15 +248,23 @@ export default class MusicService {
 
     public async setLoopingState(state: LoopState): Promise<void> {
         if (this.loopingState === state) {
-            throw new Error(`The looping state is already set to: (${state})!`)
+            throw new Error(`The looping state is already set to: ${state}!`);
         }
 
         this.loopingState = state;
     }
 
+    public async setAudioQuality(quality: AudioQuality) {
+        if (this.audioQuality === quality) {
+            throw new Error(`The audio quality is already set to: ${quality}hz.`);
+        }
+
+        this.audioQuality = quality;
+    }
+
     public async moveTrack(atIndex: number, toIndex: number): Promise<void> {
         if (atIndex <= 1 || toIndex >= this.queue.length) {
-            throw new Error(`Invalid index! Provided (${atIndex}) and (${toIndex})`);
+            throw new Error(`Invalid index! Provided ${atIndex} and ${toIndex}.`);
         }
 
         Arrays.move(atIndex, toIndex, this.queue);
@@ -272,11 +282,6 @@ export default class MusicService {
             throw new Error("There was an error stopping the player.");
         }
     }
-
-    public destroy() {
-        delete this.cache.service;
-    }
-
 }
 
 export enum LoopState {
