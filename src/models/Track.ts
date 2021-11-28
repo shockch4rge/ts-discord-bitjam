@@ -75,15 +75,15 @@ export default class Track implements TrackData {
     /**
      * Creates an AudioResource from this Track.
      */
-    public createAudioResource(): Promise<AudioResource<Track>> {
+    public createAudioResource(quality: AudioQuality): Promise<AudioResource<Track>> {
         return new Promise((resolve, reject) => {
             // i have no idea what this does
             const process = ytdl(
                 this.url,
                 {
                     o: '-',
-                    q: '',
-                    f: 'bestaudio[ext=webm+acodec=opus+asr=48000]/bestaudio',
+                    q: '0',
+                    f: `bestaudio[ext=webm+acodec=opus+asr=${quality}]/bestaudio`,
                     r: '100K',
                 },
                 { stdio: ['ignore', 'pipe', 'ignore'] },
@@ -133,4 +133,10 @@ export interface TrackData {
     cover: string,
     duration: number,
     requester: string,
+}
+
+export enum AudioQuality {
+    LOW = 16000,
+    MEDIUM = 32000,
+    HIGH = 48000
 }
