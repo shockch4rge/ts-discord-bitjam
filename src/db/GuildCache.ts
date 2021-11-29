@@ -13,15 +13,16 @@ export default class GuildCache {
         this.bot = bot;
         this.guild = guild;
         this.apiHelper = new ApiHelper();
+
+        this.unNick();
     }
 
-    public async nick(name: string) {
-        await this.guild.me!.setNickname(name).catch(() => {
-        });
+    public nick(name: string) {
+        void this.guild.me!.setNickname(name);
     }
 
-    public async unNick() {
-        await this.guild.me!.setNickname(null);
+    public unNick() {
+        void this.guild.me!.setNickname(null);
     }
 
     /**
@@ -39,11 +40,10 @@ export default class GuildCache {
 
             if (channel.isVoice()) {
                 sessionMinutes += interval;
-                console.log(`Performed check on voice connection.`);
 
                 if (channel.members.size === 1 && channel.members.get(this.guild.me!.id)) {
                     await this.guild.me!.voice.disconnect();
-                    await this.unNick();
+                    this.unNick();
                     delete this.service;
                     console.log(`Disconnected from the voice channel. Session time: ${sessionMinutes} minutes`);
                     sessionMinutes = 0;
