@@ -11,7 +11,7 @@ module.exports = {
             .setName("quality")
             .setDescription("Choose the desired streaming quality. (low = 16000hz, medium = 32000hz, high = 48000hz)")
             .setRequired(true)
-            .addChoice("low", "LOW") // keyof typeof AudioQuality
+            .addChoice("low", "LOW")
             .addChoice("medium", "MEDIUM")
             .addChoice("high", "HIGH")),
 
@@ -32,7 +32,7 @@ module.exports = {
                 .setColor("RED"));
         }
 
-        const audioQuality = helper.getInteractionString("quality")! as keyof typeof AudioQuality;
+        const audioQuality = helper.getInteractionString("quality")! as AudioQuality;
 
         try {
             await service.setAudioQuality(audioQuality);

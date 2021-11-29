@@ -11,9 +11,9 @@ module.exports = {
             .setName("state")
             .setDescription("The looping state to switch to.")
             .setRequired(true)
-            .addChoice("off", LoopState.OFF)
-            .addChoice("track", LoopState.TRACK)
-            .addChoice("queue", LoopState.QUEUE)),
+            .addChoice("off", "OFF")
+            .addChoice("track", "TRACK")
+            .addChoice("queue", "QUEUE")),
 
     execute: async helper => {
         const member = helper.interaction.member as GuildMember;
