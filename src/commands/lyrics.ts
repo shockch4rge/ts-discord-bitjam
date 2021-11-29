@@ -54,9 +54,9 @@ module.exports = {
         try {
             lyrics = await helper.cache.apiHelper.getGeniusLyrics(`${track.title} ${track.artist}`);
         }
-        catch ({ msg }) {
+        catch ({ message }) {
             return await helper.respond(new MessageEmbed()
-                .setAuthor(`❌  ${msg}`)
+                .setAuthor(`❌  ${message}`)
                 .setColor("RED"));
         }
 

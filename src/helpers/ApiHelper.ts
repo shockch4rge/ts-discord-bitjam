@@ -77,7 +77,7 @@ export class ApiHelper {
         }
 
         const result = (
-            await this.youtubeMusicApi.search(`${track.name} ${track.artists[0].name}`, "track")
+            await this.youtubeMusicApi.search(`${track.name} ${track.artists[0].name}`, "song")
         ).content[0];
 
         return new Track({

@@ -27,9 +27,9 @@ module.exports = {
         try {
             await service.resume();
         }
-        catch ({ msg }) {
+        catch ({ message }) {
             return await helper.respond(new MessageEmbed()
-                .setAuthor(`❌  ${msg}`)
+                .setAuthor(`❌  ${message}`)
                 .setColor("RED"));
         }
 
