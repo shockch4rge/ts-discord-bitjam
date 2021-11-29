@@ -5,10 +5,10 @@ import { GuildMember, MessageEmbed } from "discord.js";
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("lyrics")
-        .setDescription("Get a track's lyrics at a specified queue index. Leave option empty for the current one.")
-        .addIntegerOption(option => option
-            .setName("index")
-            .setDescription("The track's index to fetch the lyrics of. Leave empty for the current one.")
+        .setDescription("Find a track's lyrics by title. Leave field empty for the current track.")
+        .addStringOption(option => option
+            .setName("title")
+            .setDescription("Any track title. Include the artist for more accurate results.")
             .setRequired(false)),
 
     execute: async helper => {
@@ -16,7 +16,7 @@ module.exports = {
 
         if (!helper.isMemberInBotVc(member)) {
             return await helper.respond(new MessageEmbed()
-                .setTitle("❌  We must be in the same voice channel to use this command!")
+                .setAuthor("❌  We must be in the same voice channel to use this command!")
                 .setColor("RED"));
         }
 
@@ -35,33 +35,20 @@ module.exports = {
         }
 
         // may be null
-        let index = helper.getInteractionInteger("index");
-
-        // user wants the current track
-        if (!index) {
-            index = 1;
-        }
-
-        if (index <= 0 || index > service.queue.length) {
-            return await helper.respond(new MessageEmbed()
-                .setAuthor(`❌  Invalid index provided: ${index} (min: 1)`)
-                .setColor("RED"));
-        }
-
-        const track = service.queue[index - 1];
+        let title = helper.getInteractionString("title");
         let lyrics: string;
 
-        try {
-            lyrics = await helper.cache.apiHelper.getGeniusLyrics(`${track.title} ${track.artist}`);
+        if (!title) {
+            const track = service.queue[0];
+            title = `${track.title} - ${track.artist}`;
+            lyrics = await helper.cache.apiHelper.getGeniusLyrics(title);
         }
-        catch ({ message }) {
-            return await helper.respond(new MessageEmbed()
-                .setAuthor(`❌  ${message}`)
-                .setColor("RED"));
+        else {
+            lyrics = await helper.cache.apiHelper.getGeniusLyrics(title);
         }
 
         return await helper.respond(new MessageEmbed()
-            .setAuthor(`🎤  Lyrics for ${track.title}:`)
+            .setAuthor(`🎤  Lyrics for ${title}:`)
             .setDescription(lyrics)
             .setColor("GREYPLE"));
     }
