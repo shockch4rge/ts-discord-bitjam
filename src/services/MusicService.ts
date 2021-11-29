@@ -18,14 +18,14 @@ export default class MusicService {
     public readonly player: AudioPlayer;
     public readonly queue: Track[];
     public loopingState: LoopState;
-    public audioQuality: keyof typeof AudioQuality;
+    public audioQuality: AudioQuality;
     private readyLock: boolean;
 
     public constructor(connection: VoiceConnection, cache: GuildCache) {
         this.cache = cache;
         this.connection = connection;
         this.player = createAudioPlayer();
-        this.loopingState = LoopState.OFF;
+        this.loopingState = "OFF";
         this.queue = [];
         this.readyLock = false;
         this.audioQuality = "HIGH";
@@ -112,7 +112,7 @@ export default class MusicService {
 
             if (newState.status === AudioPlayerStatus.Idle) {
                 switch (this.loopingState) {
-                    case LoopState.OFF:
+                    case "OFF":
                         this.queue.shift();
 
                         if (this.queue.length !== 0) {
@@ -120,12 +120,12 @@ export default class MusicService {
                         }
                         break;
 
-                    case LoopState.TRACK:
+                    case "TRACK":
                         // replay the current track
                         await this.play();
                         break;
 
-                    case LoopState.QUEUE:
+                    case "QUEUE":
                         const track = this.queue.shift();
 
                         if (track && this.queue.length !== 0) {
@@ -139,12 +139,10 @@ export default class MusicService {
 
             switch (newState.status) {
                 case AudioPlayerStatus.Idle:
-                case AudioPlayerStatus.Buffering:
                     await this.cache.nick(`⏱️  ${this.cache.bot.user!.username} | Idle`);
                     break;
 
                 case AudioPlayerStatus.Paused:
-                case AudioPlayerStatus.AutoPaused:
                     await this.cache.nick(`⏸️  ${this.cache.bot.user!.username} | Paused`);
                     break;
 
@@ -174,7 +172,7 @@ export default class MusicService {
             this.player.play(resource);
         }
         catch {
-            throw new Error("There was an error creating the track.")
+            throw new Error("There was an error creating the track.");
         }
     }
 
@@ -220,7 +218,7 @@ export default class MusicService {
         const resumed = this.player.unpause();
 
         if (!resumed) {
-            throw new Error("There was an error resuming!")
+            throw new Error("There was an error resuming!");
         }
     }
 
@@ -240,7 +238,7 @@ export default class MusicService {
             throw new Error(`Invalid from-index provided: (${fromIndex})`);
         }
         if (toIndex <= 0 || toIndex >= this.queue.length) {
-            throw new Error(`Invalid to-index provided: (${toIndex})`)
+            throw new Error(`Invalid to-index provided: (${toIndex})`);
         }
 
         Arrays.portion(fromIndex, toIndex, this.queue);
@@ -248,15 +246,15 @@ export default class MusicService {
 
     public async setLoopingState(state: LoopState): Promise<void> {
         if (this.loopingState === state) {
-            throw new Error(`The looping state is already set to: ${state}!`);
+            throw new Error(`The looping state is already set to: ${state}`)
         }
 
         this.loopingState = state;
     }
 
-    public async setAudioQuality(quality: keyof typeof AudioQuality) {
+    public async setAudioQuality(quality: AudioQuality) {
         if (this.audioQuality === quality) {
-            throw new Error(`The audio quality is already set to: ${quality}.`);
+            throw new Error(`The audio quality is already set to: ${quality}`);
         }
 
         this.audioQuality = quality;
@@ -284,8 +282,10 @@ export default class MusicService {
     }
 }
 
-export enum LoopState {
-    OFF = "OFF",
-    TRACK = "TRACK",
-    QUEUE = "QUEUE",
-}
+export type LoopState = keyof typeof LoopStateOptions;
+
+export const LoopStateOptions = {
+    OFF: "OFF",
+    TRACK: "TRACK",
+    QUEUE: "QUEUE",
+} as const;
