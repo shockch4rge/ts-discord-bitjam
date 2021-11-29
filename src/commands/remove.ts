@@ -20,7 +20,7 @@ module.exports = {
 
         if (!helper.isMemberInBotVc(member)) {
             return await helper.respond(new MessageEmbed()
-                .setTitle("❌  We must be in the same voice channel to use this command!")
+                .setAuthor("❌  We must be in the same voice channel to use this command!")
                 .setColor("RED"));
         }
 
