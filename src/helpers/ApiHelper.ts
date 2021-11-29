@@ -98,22 +98,21 @@ export class ApiHelper {
         try {
             album = (await this.spotifyApi.getAlbumTracks(id)).body.items;
         }
-        catch (e) {
-            // @ts-ignore
-            throw new Error(`Invalid URL! ${e.message}`)
+        catch {
+            throw new Error(`Could not get the Spotify album. Check the URL?`)
         }
 
-        const tracks: Promise<Track>[] = [];
+        const loadingTracks: Promise<Track>[] = [];
 
         for (let i = 0; i < album.length; i++) {
             // append up to 100 tracks at a time to avoid API abuse
             if (i >= 100) break;
 
             const track = album[i];
-            tracks.push(this.getSpotifyTrack(track.id, requester));
+            loadingTracks.push(this.getSpotifyTrack(track.id, requester));
         }
 
-        return Promise.all(tracks);
+        return Promise.all(loadingTracks);
     }
 
     public async getSpotifyPlaylist(id: string, requester: string): Promise<Track[]> {
@@ -124,22 +123,21 @@ export class ApiHelper {
         try {
             playlist = (await this.spotifyApi.getPlaylistTracks(id)).body.items.map(track => track.track);
         }
-        catch (e) {
-            // @ts-ignore
-            throw new Error(`Invalid URL! ${e.message}`)
+        catch {
+            throw new Error(`Could not get the Spotify playlist. Check the URL?`)
         }
 
-        const tracks: Promise<Track>[] = [];
+        const loadingTracks: Promise<Track>[] = [];
 
         for (let i = 0; i < playlist.length; i++) {
             // append up to 100 tracks at a time to avoid API abuse
             if (i >= 100) break;
 
             const track = playlist[i];
-            tracks.push(this.getSpotifyTrack(track.id, requester));
+            loadingTracks.push(this.getSpotifyTrack(track.id, requester));
         }
 
-        return Promise.all(tracks);
+        return Promise.all(loadingTracks);
     }
 
     public async getGeniusLyrics(query: string): Promise<string> {
