@@ -2,9 +2,6 @@ node_modules/
 package-lock.json
 auth.json
 firebase/
-testing.ts
 services-old/
-player.ts
-connection.ts
 .env
 .eslintrc.json
