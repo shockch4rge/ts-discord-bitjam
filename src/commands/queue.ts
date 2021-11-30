@@ -1,39 +1,41 @@
-import { InteractionFile } from "../helpers/BotHelper";
+import { SlashCommandFile } from "../helpers/BotHelper";
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { GuildMember, MessageEmbed } from "discord.js";
+import { MessageEmbed } from "discord.js";
 import { QueueFormatter } from "../utilities/QueueFormatter";
 
 module.exports = {
+    params: {
+        ephemeral: true,
+        defer: false,
+    },
+
     data: new SlashCommandBuilder()
         .setName("queue")
         .setDescription("View the current queue."),
 
+    passCondition: helper => {
+        return new Promise<void>((resolve, reject) => {
+            if (!helper.cache.service) {
+                reject("❌  I am not currently in a voice channel!");
+            }
+            if (helper.cache.service!.queue.length <= 0) {
+                reject("❗  The queue is empty!");
+            }
+
+            resolve();
+        })
+
+    },
+
     execute: async helper => {
-        const member = helper.interaction.member as GuildMember;
-
-        if (!helper.isMemberInBotVc(member)) {
-            return await helper.respond(new MessageEmbed()
-                .setAuthor("❌  You must be in the bot's voice channel to use this command!")
-                .setColor("RED"));
-        }
-
-        const service = helper.cache.service;
-
-        if (!service) {
-            return await helper.respond(new MessageEmbed()
-                .setAuthor("❌  I am not currently in a voice channel!")
-                .setColor("RED"));
-        }
-
-        if (service.queue.length === 0) {
-            return await helper.respond(new MessageEmbed()
-                .setAuthor("❗  The queue is empty!")
-                .setColor("GOLD"));
-        }
-
-        const embed = new QueueFormatter(service.queue).getEmbed();
-
+        const embed = new QueueFormatter(helper.cache.service!.queue).getEmbed();
         return await helper.respond(embed);
+    },
+
+    fail: async (helper, error) => {
+        return await helper.respond(new MessageEmbed()
+            .setAuthor(`❌ ${error}`)
+            .setColor("RED"))
     }
 
-} as InteractionFile;
+} as SlashCommandFile;

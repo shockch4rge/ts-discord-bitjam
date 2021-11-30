@@ -4,197 +4,209 @@ import path from "path";
 import SlashCommandDeployer from "../utilities/SlashCommandDeployer";
 import GuildCache from "../db/GuildCache";
 import BotCache from "../db/BotCache";
-import CommandInteractionHelper from "./CommandInteractionHelper";
-import { ButtonInteractionHelper } from "./ButtonInteractionHelper";
+import SlashCommandHelper from "./SlashCommandHelper";
+import { ButtonHelper } from "./ButtonHelper";
 import { delay } from "../utilities/Utils";
 import { SlashCommandBuilder, SlashCommandSubcommandBuilder } from "@discordjs/builders";
 
 export default class BotHelper {
-    public readonly bot: Client;
-    public readonly botCache: BotCache;
-    public readonly messageFiles: Collection<string, Message>;
-    public readonly interactionFiles: Collection<string, InteractionFile>;
-    public readonly buttonFiles: Collection<string, ButtonFile>;
+	public readonly bot: Client;
+	public readonly botCache: BotCache;
+	public readonly messageFiles: Collection<string, Message>;
+	public readonly slashCommandFile: Collection<string, SlashCommandFile>;
+	public readonly buttonFiles: Collection<string, ButtonFile>;
 
-    public constructor(bot: Client) {
-        this.bot = bot;
-        this.botCache = new BotCache(this.bot);
+	public constructor(bot: Client) {
+		this.bot = bot;
+		this.botCache = new BotCache(this.bot);
 
-        this.messageFiles = new Collection<string, Message>();
-        this.interactionFiles = new Collection<string, InteractionFile>();
-        this.buttonFiles = new Collection<string, ButtonFile>();
-    }
+		this.messageFiles = new Collection<string, Message>();
+		this.slashCommandFile = new Collection<string, SlashCommandFile>();
+		this.buttonFiles = new Collection<string, ButtonFile>();
+	}
 
-    public setup() {
-        this.setupCommandInteractions();
-        this.setupButtonInteractions();
-        this.setupBotEvents();
-    }
+	public setup() {
+		this.setupCommandInteractions();
+		this.setupButtonInteractions();
+		this.setupBotEvents();
+	}
 
-    private setupBotEvents() {
-        // ready
-        this.bot.on("ready", async bot => {
-            console.log(`${bot.user.tag} is ready!`);
-            const guilds = this.bot.guilds.cache.toJSON();
+	private setupBotEvents() {
+		// ready
+		this.bot.on("ready", async bot => {
+			console.log(`${bot.user.tag} is ready!`);
+			const guilds = this.bot.guilds.cache.toJSON();
 
-            for (const guild of guilds) {
-                let cache: GuildCache | undefined;
+			for (const guild of guilds) {
+				let cache: GuildCache | undefined;
 
-                try {
-                    cache = await this.botCache.getGuildCache(guild);
-                }
-                catch (err) {
-                    // @ts-ignore
-                    console.error(`❌  Couldn't find ${guild.name}`);
-                    continue;
-                }
+				try {
+					cache = await this.botCache.getGuildCache(guild);
+				}
+				catch (err) {
+					// @ts-ignore
+					console.error(`❌  Couldn't find ${guild.name}`);
+					continue;
+				}
 
-                // deploy/refresh slash commands for each guild
-                const deployer = new SlashCommandDeployer(guild.id, this.interactionFiles);
+				// deploy/refresh slash commands for each guild
+				const deployer = new SlashCommandDeployer(guild.id, this.slashCommandFile);
 
-                try {
-                    await deployer.deploy();
-                }
-                catch (err) {
-                    // @ts-ignore
-                    console.error(`❌  Failed to deploy commands in ${guild.name}: ${err.message}`);
-                    continue;
-                }
+				try {
+					await deployer.deploy();
+				}
+				catch (err) {
+					// @ts-ignore
+					console.error(`❌  Failed to deploy commands in ${guild.name}: ${err.message}`);
+					continue;
+				}
 
-                console.log(`✅  Restored cache for ${guild.name}`);
-            }
+				console.log(`✅  Restored cache for ${guild.name}`);
+			}
 
-        });
+		});
 
-        // messageCreate
-        this.bot.on("messageCreate", async message => {
-            if (message.author.bot) return;
-            if (!message.guild) return;
+		// messageCreate
+		this.bot.on("messageCreate", async message => {
+			if (message.author.bot) return;
+			if (!message.guild) return;
 
-            if (/^\|ping/.test(message.content)) {
-                await message.reply({ content: `Pong! ${this.bot.ws.ping}ms` });
-                return;
-            }
-        });
+			if (/^\|ping/.test(message.content)) {
+				await message.reply({ content: `Pong! ${this.bot.ws.ping}ms` });
+				return;
+			}
+		});
 
-        // interactionCreate
-        this.bot.on("interactionCreate", async interaction => {
-            if (!interaction.guild) return;
+		// interactionCreate
+		this.bot.on("interactionCreate", async interaction => {
+			if (!interaction.guild) return;
 
-            const guildCache = await this.botCache.getGuildCache(interaction.guild);
+			const guildCache = await this.botCache.getGuildCache(interaction.guild);
 
-            // Slash command
-            if (interaction.isCommand()) {
-                await interaction.deferReply({ ephemeral: true });
-                const interactionFile = this.interactionFiles.get(interaction.commandName);
-                if (!interactionFile) return;
+			// Slash command
+			if (interaction.isCommand()) {
+				const slashCommandFile = this.slashCommandFile.get(interaction.commandName);
+				if (!slashCommandFile) return;
 
-                const helper = new CommandInteractionHelper(guildCache, interaction);
+				if (slashCommandFile.params.defer) {
+					await interaction.deferReply({
+						ephemeral: slashCommandFile.params.ephemeral,
+					});
+				}
 
-                try {
-                    if (interactionFile.execute) {
-                        await interactionFile.execute(helper);
-                    }
-                }
-                catch (err) {
-                    console.warn(err);
-                    await interaction.followUp({
-                        content: "There was an error executing this command!"
-                    });
-                }
-            }
+				const helper = new SlashCommandHelper(guildCache, interaction);
 
-            // Button command
-            if (interaction.isButton()) {
-                const buttonFile = this.buttonFiles.get(interaction.customId);
-                if (!buttonFile) return;
+				try {
+					await slashCommandFile.passCondition(helper);
+				}
+				catch (err) {
+					// @ts-ignore
+					return await slashCommandFile.fail(helper, err.message);
+				}
 
-                const helper = new ButtonInteractionHelper(guildCache, interaction);
+				await slashCommandFile.execute(helper);
+			}
 
-                try {
-                    await buttonFile.execute(helper);
-                }
-                catch (err) {
-                    console.warn(err);
-                    await interaction.reply({ content: "There was an error executing this button!" });
-                    await delay(5000);
-                    await interaction.deleteReply();
-                }
-            }
-        });
+			// Button command
+			if (interaction.isButton()) {
+				const buttonFile = this.buttonFiles.get(interaction.customId);
+				if (!buttonFile) return;
 
-        this.bot.on("voiceStateUpdate", async (oldState, newState) => {
+				const helper = new ButtonHelper(guildCache, interaction);
 
-        })
+				try {
+					await buttonFile.execute(helper);
+				}
+				catch (err) {
+					console.warn(err);
+					await interaction.reply({ content: "There was an error executing this button!" });
+					await delay(5000);
+					await interaction.deleteReply();
+				}
+			}
+		});
 
-        // guildCreate
-        this.bot.on("guildCreate", async guild => {
-            await this.botCache.createGuildCache(guild);
-            const deployer = new SlashCommandDeployer(guild.id, this.interactionFiles);
-            await deployer.deploy();
-        });
+		// guildCreate
+		this.bot.on("guildCreate", async guild => {
+			await this.botCache.createGuildCache(guild);
+			const deployer = new SlashCommandDeployer(guild.id, this.slashCommandFile);
 
-        // guildDelete
-        this.bot.on("guildDelete", async guild => {
-            console.log(`Removed from guild: ${guild.name}`);
-            await this.botCache.deleteGuildCache(guild.id);
-        })
-    }
+			try {
+				await deployer.deploy();
+			}
+			catch (err) {
+				// @ts-ignore
+				console.error(`❌  Failed to deploy commands in ${guild.name}: ${err.message}`);
+			}
+		});
 
-    private setupCommandInteractions() {
-        let fileNames: string[];
+		// guildDelete
+		this.bot.on("guildDelete", async guild => {
+			console.log(`Removed from guild: ${guild.name}`);
+			await this.botCache.deleteGuildCache(guild.id);
+		});
+	}
 
-        try {
-            fileNames = fs.readdirSync(path.join(__dirname, "../commands"))
-                .filter(fileName => BotHelper.isFile(fileName));
-        }
-        catch (err) {
-            // @ts-ignore
-            console.error(`There was an error reading a file: ${err.message}`);
-            return;
-        }
+	private setupCommandInteractions() {
+		let fileNames: string[];
 
-        for (const fileName of fileNames) {
-            const interactionFile = require(`../commands/${fileName}`) as InteractionFile;
-            this.interactionFiles.set(interactionFile.data.name, interactionFile);
-        }
-    }
+		try {
+			fileNames = fs.readdirSync(path.join(__dirname, "../commands"))
+				.filter(fileName => BotHelper.isFile(fileName));
+		}
+		catch (err) {
+			// @ts-ignore
+			console.error(`There was an error reading a file: ${err.message}`);
+			return;
+		}
 
-    private setupButtonInteractions() {
-        let fileNames: string[];
+		for (const fileName of fileNames) {
+			const interactionFile = require(`../commands/${fileName}`) as SlashCommandFile;
+			this.slashCommandFile.set(interactionFile.data.name, interactionFile);
+		}
+	}
 
-        try {
-            fileNames = fs.readdirSync(path.join(__dirname, "../buttons"))
-                .filter(fileName => BotHelper.isFile(fileName));
-        }
-        catch (err) {
-            // @ts-ignore
-            console.error(`There was an error reading a file: ${err.message}`);
-            return;
-        }
+	private setupButtonInteractions() {
+		let fileNames: string[];
 
-        for (const fileName of fileNames) {
-            const buttonFile = require(`../buttons/${fileName}`) as ButtonFile;
-            this.buttonFiles.set(buttonFile.id, buttonFile);
-        }
-    }
+		try {
+			fileNames = fs.readdirSync(path.join(__dirname, "../buttons"))
+				.filter(fileName => BotHelper.isFile(fileName));
+		}
+		catch (err) {
+			// @ts-ignore
+			console.error(`There was an error reading a file: ${err.message}`);
+			return;
+		}
 
-    public static isFile(fileName: string) {
-        return fileName.endsWith(".ts") || fileName.endsWith(".js");
-    }
+		for (const fileName of fileNames) {
+			const buttonFile = require(`../buttons/${fileName}`) as ButtonFile;
+			this.buttonFiles.set(buttonFile.id, buttonFile);
+		}
+	}
+
+	public static isFile(fileName: string) {
+		return fileName.endsWith(".ts") || fileName.endsWith(".js");
+	}
 }
 
-export type InteractionFile = {
-    data: SlashCommandBuilder,
-    execute: (helper: CommandInteractionHelper) => Promise<void>,
+export type SlashCommandFile = {
+	params: {
+		defer: boolean,
+		ephemeral: boolean,
+	}
+	data: SlashCommandBuilder,
+	passCondition: (helper: SlashCommandHelper) => Promise<void>,
+	execute: (helper: SlashCommandHelper) => Promise<void>,
+	fail: (helper: SlashCommandHelper, error: string) => Promise<void>,
 }
 
-export type InteractionSubCommandFile = {
-    data: SlashCommandSubcommandBuilder,
-    execute: (helper: CommandInteractionHelper) => Promise<void>,
+export type SlashSubCommandFile = {
+	data: SlashCommandSubcommandBuilder,
+	execute: (helper: SlashCommandHelper) => Promise<void>,
 }
 
 export type ButtonFile = {
-    id: string,
-    execute: (helper: ButtonInteractionHelper) => Promise<void>;
+	id: string,
+	execute: (helper: ButtonHelper) => Promise<void>;
 }

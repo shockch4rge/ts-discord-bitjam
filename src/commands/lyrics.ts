@@ -1,55 +1,61 @@
-import { InteractionFile } from "../helpers/BotHelper";
+import { SlashCommandFile } from "../helpers/BotHelper";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { GuildMember, MessageEmbed } from "discord.js";
 
 module.exports = {
-    data: new SlashCommandBuilder()
-        .setName("lyrics")
-        .setDescription("Find a track's lyrics by title. Leave field empty for the current track.")
-        .addStringOption(option => option
-            .setName("title")
-            .setDescription("Any track title. Include the artist for more accurate results.")
-            .setRequired(false)),
+	params: {
+		ephemeral: true,
+		defer: true,
+	},
 
-    execute: async helper => {
-        const member = helper.interaction.member as GuildMember;
+	data: new SlashCommandBuilder()
+		.setName("lyrics")
+		.setDescription("Find a track's lyrics by title. Leave field empty for the current track.")
+		.addStringOption(option => option
+			.setName("title")
+			.setDescription("Any track title. Include the artist for more accurate results.")
+			.setRequired(false)),
 
-        if (!helper.isMemberInBotVc(member)) {
-            return await helper.respond(new MessageEmbed()
-                .setAuthor("❌  We must be in the same voice channel to use this command!")
-                .setColor("RED"));
-        }
+	passCondition: helper => {
+		return new Promise<void>((resolve, reject) => {
+			const member = helper.interaction.member as GuildMember;
 
-        const service = helper.cache.service;
+			if (!helper.isMemberInMyVc(member)) {
+				reject("❌  We need to be in the same voice channel to use this command!");
+			}
 
-        if (!service) {
-            return await helper.respond(new MessageEmbed()
-                .setAuthor("❌  I am not currently in a voice channel!")
-                .setColor("RED"));
-        }
+			if (!helper.cache.service) {
+				reject("❌  I am not currently in a voice channel!");
+			}
 
-        if (service.queue.length <= 0) {
-            return await helper.respond(new MessageEmbed()
-                .setAuthor("❌  There are no tracks in the queue!")
-                .setColor("RED"));
-        }
+			resolve();
+		});
 
-        // may be null
-        let title = helper.getInteractionString("title");
-        let lyrics: string;
+	},
 
-        if (!title) {
-            const track = service.queue[0];
-            title = `${track.title} - ${track.artist}`;
-            lyrics = await helper.cache.apiHelper.getGeniusLyrics(title);
-        }
-        else {
-            lyrics = await helper.cache.apiHelper.getGeniusLyrics(title);
-        }
+	execute: async helper => {
+		// may be null
+		let title = helper.getInteractionString("title");
+		let lyrics: string;
 
-        return await helper.respond(new MessageEmbed()
-            .setAuthor(`🎤  Lyrics for ${title}:`)
-            .setDescription(lyrics)
-            .setColor("GREYPLE"));
-    }
-} as InteractionFile;
+		if (!title) {
+			const track = helper.cache.service!.queue[0];
+			title = `${track.title} - ${track.artist}`;
+			lyrics = await helper.cache.apiHelper.getGeniusLyrics(title);
+		}
+		else {
+			lyrics = await helper.cache.apiHelper.getGeniusLyrics(title);
+		}
+
+		return await helper.respond(new MessageEmbed()
+			.setAuthor(`🎤  Lyrics for ${title}:`)
+			.setDescription(lyrics)
+			.setColor("GREYPLE"));
+	},
+
+	fail: async (helper, error) => {
+		return await helper.respond(new MessageEmbed()
+			.setAuthor(`${error}`)
+			.setColor("RED"));
+	}
+} as SlashCommandFile;

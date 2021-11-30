@@ -1,4 +1,4 @@
-import { InteractionFile } from "../helpers/BotHelper";
+import { SlashCommandFile } from "../helpers/BotHelper";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { GuildMember, MessageEmbed } from "discord.js";
 import { DiscordGatewayAdapterCreator, joinVoiceChannel } from "@discordjs/voice";
@@ -6,6 +6,11 @@ import MusicService from "../services/MusicService";
 import Track from "../models/Track";
 
 module.exports = {
+    params: {
+        ephemeral: true,
+        defer: true,
+    },
+
     data: new SlashCommandBuilder()
         .setName("play")
         .setDescription("Play a track with a specified search query or URL.")
@@ -14,6 +19,8 @@ module.exports = {
             .setDescription("Can be a search query, Spotify or Youtube link.")
             .setRequired(true)
         ),
+
+    passCondition: helper => new Promise<void>(resolve => resolve()),
 
     execute: async helper => {
         const member = helper.interaction.member as GuildMember;
@@ -54,5 +61,7 @@ module.exports = {
                 .setAuthor(`✔️  Appended '${tracks.title} - ${tracks.artist}' to the queue!`)
                 .setColor("GREEN"));
         }
-    }
-} as InteractionFile;
+    },
+
+    fail: async (helper, error) => {}
+} as SlashCommandFile;

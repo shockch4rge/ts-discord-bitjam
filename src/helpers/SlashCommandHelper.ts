@@ -2,31 +2,29 @@ import GuildCache from "../db/GuildCache";
 import { CommandInteraction, GuildMember, MessageEmbed } from "discord.js";
 import { InteractionHelper } from "../utilities/InteractionHelper";
 
-export default class CommandInteractionHelper extends InteractionHelper<CommandInteraction> {
+export default class SlashCommandHelper extends InteractionHelper<CommandInteraction> {
     public constructor(cache: GuildCache, interaction: CommandInteraction) {
         super(cache, interaction);
+    }
+
+    public isMemberInMyVc(member: GuildMember) {
+        const channel = member.voice.channel;
+
+        return channel && channel.id === this.cache.guild.me?.voice.channelId;
     }
 
     public async respond(options: MessageEmbed | string) {
         if (options instanceof MessageEmbed) {
             await this.interaction.followUp({
                 embeds: [options],
-                ephemeral: true,
             }).catch(() => {});
         }
         else {
             await this.interaction.followUp({
                 content: options,
-                ephemeral: true,
             }).catch(() => {});
         }
 
-    }
-
-    public isMemberInBotVc(member: GuildMember) {
-        const channel = member.voice.channel;
-
-        return channel && (channel.id === this.cache.guild.me?.voice.channelId);
     }
 
     public getInteractionMentionable(name: string) {

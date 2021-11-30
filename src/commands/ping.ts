@@ -1,8 +1,13 @@
-import { InteractionFile } from "../helpers/BotHelper";
+import { SlashCommandFile } from "../helpers/BotHelper";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { MessageEmbed } from "discord.js";
 
 module.exports = {
+    params: {
+        ephemeral: true,
+        defer: false,
+    },
+
     data: new SlashCommandBuilder()
         .setName("ping")
         .setDescription("Get the bot's response time, in milliseconds."),
@@ -13,4 +18,4 @@ module.exports = {
             .setColor("GOLD"))
     }
 
-} as InteractionFile;
+} as SlashCommandFile;

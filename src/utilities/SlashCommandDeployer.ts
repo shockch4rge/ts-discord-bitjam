@@ -2,16 +2,16 @@ import { SlashCommandBuilder } from "@discordjs/builders";
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/v9";
 import { Collection } from "discord.js";
-import { InteractionFile } from "../helpers/BotHelper";
+import { SlashCommandFile } from "../helpers/BotHelper";
 
 const auth = require("../../auth.json");
 
 export default class SlashCommandDeployer {
     private readonly guildId: string;
     private readonly commands: SlashCommandBuilder[];
-    private readonly interactionFiles: Collection<string, InteractionFile>
+    private readonly interactionFiles: Collection<string, SlashCommandFile>
 
-    public constructor(guildId: string, interactionFiles: Collection<string, InteractionFile>) {
+    public constructor(guildId: string, interactionFiles: Collection<string, SlashCommandFile>) {
         this.guildId = guildId;
         this.interactionFiles = interactionFiles;
         this.commands = [];
