@@ -4,7 +4,6 @@
   "description": "A generic music bot for Discord",
   "main": "app.ts",
   "scripts": {
-    "lint": ".eslintrc.json",
     "start": "ts-node ./src/app.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -37,7 +36,6 @@
     "@types/spotify-web-api-node": "^5.0.3",
     "@typescript-eslint/eslint-plugin": "^5.4.0",
     "@typescript-eslint/parser": "^5.4.0",
-    "discord-api-types": "^0.24.0",
-    "eslint": "^8.3.0"
+    "discord-api-types": "^0.24.0"
   }
 }
