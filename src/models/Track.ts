@@ -43,11 +43,12 @@ export default class Track implements TrackData {
                         }
                         break;
 
-                    case "www.youtube.com":
+                case "www.youtube.com":
+                    case "youtube.com":
                         if (!url.searchParams.get("list") && url.searchParams.get("v")) {
                             possibleTracks = apiHelper.getYoutubeTrack(url.searchParams.get("v")!, requester);
                         }
-                        else if (url.searchParams.get("list") && url.searchParams.get("v")) {
+                        else if (url.searchParams.get("list")) {
                             possibleTracks = apiHelper.getYoutubePlaylist(url.searchParams.get("list")!, requester);
                         }
                         else {
@@ -143,4 +144,5 @@ export const AudioQualityPresets = {
     LOW: ["16000", "32K", "5"],
     MEDIUM: ["32000", "64K", "3"],
     HIGH: ["48000", "128K", "0"],
+	ULTRA: ["48000", "256K", "0"],
 } as const;
