@@ -96,12 +96,14 @@ export default class BotHelper {
 
 				const helper = new SlashCommandHelper(guildCache, interaction);
 
-				try {
-					await slashCommandFile.passCondition(helper);
-				}
-				catch (err) {
-					// @ts-ignore
-					return await slashCommandFile.fail(helper, err.message);
+				if (slashCommandFile.passCondition && slashCommandFile.fail) {
+					try {
+						await slashCommandFile.passCondition(helper);
+					}
+					catch (err) {
+						// @ts-ignore
+						return await slashCommandFile.fail(helper, err.message);
+					}
 				}
 
 				await slashCommandFile.execute(helper);
@@ -196,9 +198,9 @@ export type SlashCommandFile = {
 		ephemeral: boolean,
 	}
 	data: SlashCommandBuilder,
-	passCondition: (helper: SlashCommandHelper) => Promise<void>,
+	passCondition?: (helper: SlashCommandHelper) => Promise<void>,
 	execute: (helper: SlashCommandHelper) => Promise<void>,
-	fail: (helper: SlashCommandHelper, error: string) => Promise<void>,
+	fail?: (helper: SlashCommandHelper, error: string) => Promise<void>,
 }
 
 export type SlashSubCommandFile = {
