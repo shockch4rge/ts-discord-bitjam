@@ -20,20 +20,24 @@ module.exports = {
             .setDescription("Remove tracks up to this index. Leave empty to remove only one. (max: queue length - 1)")
             .setRequired(false)),
 
-    passCondition: helper => {
-        return new Promise<void>((resolve, reject) => {
+    guard: {
+        test: async helper => {
             const member = helper.interaction.member as GuildMember;
 
             if (!helper.isMemberInMyVc(member)) {
-                reject("❌  We need to be in the same voice channel to use this command!");
+                throw new Error("❌  We need to be in the same voice channel to use this command!");
             }
 
             if (!helper.cache.service) {
-                reject("❌  I am not currently in a voice channel!");
+                throw new Error("❌  I am not currently in a voice channel!");
             }
+        },
 
-            resolve();
-        });
+        fail: async (helper, error) => {
+            return await helper.respond(new MessageEmbed()
+                .setAuthor(`${error}`)
+                .setColor("RED"));
+        },
     },
 
     execute: async helper => {
@@ -53,11 +57,5 @@ module.exports = {
             .setAuthor(`✔️  Removed ${toIndex <= 0 ? `${fromIndex} track` : `${toIndex - fromIndex} tracks`}!`)
             .setColor("GREEN"));
     },
-
-    fail: async (helper, error) => {
-        return await helper.respond(new MessageEmbed()
-            .setAuthor(`${error}`)
-            .setColor("RED"));
-    }
 
 } as SlashCommandFile;

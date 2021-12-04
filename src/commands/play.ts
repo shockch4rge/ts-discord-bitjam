@@ -17,10 +17,23 @@ module.exports = {
         .addStringOption(option => option
             .setName("query")
             .setDescription("Can be a search query, Spotify or Youtube link.")
-            .setRequired(true)
-        ),
+            .setRequired(true)),
 
-    passCondition: helper => new Promise<void>(resolve => resolve()),
+    guard: {
+        test: async helper => {
+            const member = helper.interaction.member as GuildMember;
+
+            if (!member.voice.channel) {
+                throw new Error("❌  You must be in a voice channel first!");
+            }
+        },
+
+        fail: async (helper, error) => {
+            return await helper.respond(new MessageEmbed()
+                .setAuthor(`${error}`)
+                .setColor("RED"));
+        }
+    },
 
     execute: async helper => {
         const member = helper.interaction.member as GuildMember;
@@ -63,5 +76,4 @@ module.exports = {
         }
     },
 
-    fail: async (helper, error) => {}
 } as SlashCommandFile;

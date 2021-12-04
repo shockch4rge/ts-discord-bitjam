@@ -12,20 +12,24 @@ module.exports = {
         .setName("resume")
         .setDescription("Resumes the player."),
 
-    passCondition: helper => {
-        return new Promise<void>((resolve, reject) => {
+    guard: {
+        test: async helper => {
             const member = helper.interaction.member as GuildMember;
 
             if (!helper.isMemberInMyVc(member)) {
-                reject("❌  We need to be in the same voice channel to use this command!");
+                throw new Error("❌  We need to be in the same voice channel to use this command!");
             }
 
             if (!helper.cache.service) {
-                reject("❌  I am not currently in a voice channel!");
+                throw new Error("❌  I am not currently in a voice channel!");
             }
+        },
 
-            resolve();
-        });
+        fail: async (helper, error) => {
+            return await helper.respond(new MessageEmbed()
+                .setAuthor(`${error}`)
+                .setColor("RED"));
+        }
     },
 
     execute: async helper => {
@@ -42,11 +46,5 @@ module.exports = {
             .setAuthor("✔️  Resumed!")
             .setColor("GREEN"));
     },
-
-    fail: async (helper, error) => {
-        return await helper.respond(new MessageEmbed()
-            .setAuthor(`${error}`)
-            .setColor("RED"));
-    }
 
 } as SlashCommandFile;

@@ -5,7 +5,7 @@ import { MessageEmbed } from "discord.js";
 module.exports = {
     params: {
         ephemeral: true,
-        defer: false,
+        defer: true,
     },
 
     data: new SlashCommandBuilder()
@@ -16,6 +16,6 @@ module.exports = {
         await helper.respond(new MessageEmbed()
             .setAuthor(`🕕  Pong! ${helper.cache.bot.ws.ping}ms`)
             .setColor("GOLD"))
-    }
+    },
 
 } as SlashCommandFile;

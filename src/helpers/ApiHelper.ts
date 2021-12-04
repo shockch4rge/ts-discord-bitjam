@@ -73,7 +73,7 @@ export class ApiHelper {
 			track = (await this.spotifyApi.getTrack(id)).body;
 		}
 		catch {
-			throw new Error(`Could not fetch the Spotify track. Check the URL?`);
+			return Track.getDefault();
 		}
 
 		const result = (

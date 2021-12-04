@@ -16,21 +16,24 @@ module.exports = {
 			.setDescription("Any track title. Include the artist for more accurate results.")
 			.setRequired(false)),
 
-	passCondition: helper => {
-		return new Promise<void>((resolve, reject) => {
+	guard: {
+		test: async helper => {
 			const member = helper.interaction.member as GuildMember;
 
 			if (!helper.isMemberInMyVc(member)) {
-				reject("❌  We need to be in the same voice channel to use this command!");
+				throw new Error("❌  We need to be in the same voice channel to use this command!");
 			}
 
 			if (!helper.cache.service) {
-				reject("❌  I am not currently in a voice channel!");
+				throw new Error("❌  I am not currently in a voice channel!");
 			}
+		},
 
-			resolve();
-		});
-
+		fail: async (helper, error) => {
+			return await helper.respond(new MessageEmbed()
+				.setAuthor(`${error}`)
+				.setColor("RED"));
+		},
 	},
 
 	execute: async helper => {
@@ -38,13 +41,20 @@ module.exports = {
 		let title = helper.getInteractionString("title");
 		let lyrics: string;
 
-		if (!title) {
-			const track = helper.cache.service!.queue[0];
-			title = `${track.title} - ${track.artist}`;
-			lyrics = await helper.cache.apiHelper.getGeniusLyrics(title);
+		try {
+			if (!title) {
+				const track = helper.cache.service!.queue[0];
+				title = `${track.title} - ${track.artist}`;
+				lyrics = await helper.cache.apiHelper.getGeniusLyrics(title);
+			}
+			else {
+				lyrics = await helper.cache.apiHelper.getGeniusLyrics(title);
+			}
 		}
-		else {
-			lyrics = await helper.cache.apiHelper.getGeniusLyrics(title);
+		catch ({ message }) {
+			return await helper.respond(new MessageEmbed()
+				.setAuthor(`❌ ${message}`)
+				.setColor("RED"));
 		}
 
 		return await helper.respond(new MessageEmbed()
@@ -53,9 +63,4 @@ module.exports = {
 			.setColor("GREYPLE"));
 	},
 
-	fail: async (helper, error) => {
-		return await helper.respond(new MessageEmbed()
-			.setAuthor(`${error}`)
-			.setColor("RED"));
-	}
 } as SlashCommandFile;

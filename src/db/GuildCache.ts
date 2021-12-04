@@ -36,7 +36,8 @@ export default class GuildCache {
         let sessionMinutes = 0;
 
         const timer = AfterEvery(interval).minutes(async () => {
-            const channel = this.guild.channels.cache.get(this.guild.me!.voice.channelId!) as GuildChannel;
+            const channel = this.guild.channels.cache.get(this.guild.me!.voice.channelId!) as GuildChannel | undefined;
+            if (!channel) return;
 
             if (channel.isVoice()) {
                 sessionMinutes += interval;
