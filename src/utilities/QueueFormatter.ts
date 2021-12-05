@@ -18,9 +18,9 @@ export class QueueFormatter {
             embed.addField(`___`, "...");
 
             // append tracks top down from newest
-            for (let i = 1; i < this.queue.length; i++) {
+            for (let i = 0; i < this.queue.length; i++) {
                 // append up to 9 fields
-                if (i >= 9) break;
+                if (i >= 8) break;
 
                 const track = this.queue[i];
                 embed.addField(
