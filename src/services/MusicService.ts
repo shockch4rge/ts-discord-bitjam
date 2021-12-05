@@ -113,11 +113,7 @@ export default class MusicService {
             if (newState.status === AudioPlayerStatus.Idle) {
                 switch (this.loopingState) {
                     case "OFF":
-                        this.queue.shift();
-
-                        if (this.queue.length !== 0) {
-                            await this.play();
-                        }
+                        await this.skip();
                         break;
 
                     case "TRACK":
@@ -178,7 +174,7 @@ export default class MusicService {
 
     public async skip(): Promise<void> {
         if (this.queue.length <= 0) {
-            throw new Error("There are no more tracks left in the queue!");
+            throw new Error("There are no tracks in the queue!");
         }
 
         // get the next track after we've shifted the first one out
