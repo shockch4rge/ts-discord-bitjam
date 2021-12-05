@@ -13,7 +13,7 @@ module.exports = {
         .setDescription("Remove a single/range of tracks from specified indexes.")
         .addIntegerOption(option => option
             .setName("from-index")
-            .setDescription("Start removing tracks at this index. Fill only this option to remove one track. (min: 2)")
+            .setDescription("Start removing tracks at this index. Fill only this option to remove one track. (min: 1)")
             .setRequired(true))
         .addIntegerOption(option => option
             .setName("to-index")
@@ -41,7 +41,7 @@ module.exports = {
     },
 
     execute: async helper => {
-        const fromIndex = helper.getInteractionInteger("from-index")! - 1;
+        const fromIndex = helper.getInteractionInteger("from-index")!;
         const toIndex = helper.getInteractionInteger("to-index") ?? 0;
 
         try {
@@ -54,7 +54,9 @@ module.exports = {
         }
 
         return await helper.respond(new MessageEmbed()
-            .setAuthor(`✔️  Removed ${toIndex <= 0 ? `${fromIndex} track` : `${toIndex - fromIndex} tracks`}!`)
+            .setAuthor(`✔️  Removed ${toIndex <= 0 
+                ? `${fromIndex} track` 
+                : `${toIndex - fromIndex} tracks`}!`)
             .setColor("GREEN"));
     },
 

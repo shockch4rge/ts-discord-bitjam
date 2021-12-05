@@ -13,11 +13,11 @@ module.exports = {
         .setDescription("Move a track at an index to another one.")
         .addIntegerOption(option => option
             .setName("at-index")
-            .setDescription("The index of the track to move. (min = 2)")
+            .setDescription("The index of the track to move. (min = 1)")
             .setRequired(true))
         .addIntegerOption(option => option
             .setName("to-index")
-            .setDescription("Move the track to this index. (min = 2)")
+            .setDescription("Move the track to this index. (min = 1)")
             .setRequired(true)),
 
     guard: {
@@ -41,8 +41,8 @@ module.exports = {
     },
 
     execute: async helper => {
-        const atIndex = helper.getInteractionInteger("at-index")! - 1;
-        const toIndex = helper.getInteractionInteger("to-index")! - 1;
+        const atIndex = helper.getInteractionInteger("at-index")!;
+        const toIndex = helper.getInteractionInteger("to-index")!;
 
         try {
             await helper.cache.service!.moveTrack(atIndex, toIndex);
@@ -54,7 +54,7 @@ module.exports = {
         }
 
         return await helper.respond(new MessageEmbed()
-            .setAuthor(`✔️  Moved track at index (${atIndex + 1}) to (${toIndex + 1})`)
+            .setAuthor(`✔️  Moved track at index (${atIndex}) to (${toIndex})`)
             .setColor("GREEN"));
     },
 
