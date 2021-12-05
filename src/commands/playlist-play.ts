@@ -34,11 +34,8 @@ module.exports = {
 		const playlistNames = (await helper.cache.getUserPlaylistRefs(member.id).get())
 			.docs.map(doc => doc.id);
 		const builder = new PlaylistMenuBuilder(helper);
-		const test = builder.forPlaylistSelect(playlistNames, "playlist-play");
 
-		console.log(test);
-
-		await helper.respond(test);
+		await helper.respond(builder.forPlaylistSelect(playlistNames, "playlist-play"));
 	}
 
 } as SlashCommandFile;

@@ -113,7 +113,7 @@ export default class MusicService {
             if (newState.status === AudioPlayerStatus.Idle) {
                 switch (this.loopingState) {
                     case "OFF":
-                        await this.skip();
+                        await this.skip().catch(() => {});
                         break;
 
                     case "TRACK":

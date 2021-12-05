@@ -1,5 +1,3 @@
-
-
 export default class Playlist {
 	public readonly name: string;
 	public readonly trackUrls: string[];
