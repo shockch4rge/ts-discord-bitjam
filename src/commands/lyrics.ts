@@ -41,15 +41,13 @@ module.exports = {
 		let title = helper.getInteractionString("title");
 		let lyrics: string;
 
+		if (!title) {
+			const track = helper.cache.service!.queue[0];
+			title = `${track.title} - ${track.artist}`;
+		}
+
 		try {
-			if (!title) {
-				const track = helper.cache.service!.queue[0];
-				title = `${track.title} - ${track.artist}`;
-				lyrics = await helper.cache.apiHelper.getGeniusLyrics(title);
-			}
-			else {
-				lyrics = await helper.cache.apiHelper.getGeniusLyrics(title);
-			}
+			lyrics = await helper.cache.apiHelper.getGeniusLyrics(title);
 		}
 		catch ({ message }) {
 			return await helper.respond(new MessageEmbed()
