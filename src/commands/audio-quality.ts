@@ -9,7 +9,7 @@ module.exports = {
 		defer: false,
 	},
 
-	data: new SlashCommandBuilder()
+	builder: new SlashCommandBuilder()
 		.setName("audio-quality")
 		.setDescription("Adjust the streaming quality of the resource.")
 		.addStringOption(option => option

@@ -8,7 +8,7 @@ module.exports = {
         defer: true,
     },
 
-    data: new SlashCommandBuilder()
+    builder: new SlashCommandBuilder()
         .setName("shuffle")
         .setDescription("Shuffles the tracks in the queue, if there are any."),
 

@@ -11,7 +11,7 @@ module.exports = {
         defer: true,
     },
 
-    data: new SlashCommandBuilder()
+    builder: new SlashCommandBuilder()
         .setName("play")
         .setDescription("Play a track with a specified search query or URL.")
         .addStringOption(option => option

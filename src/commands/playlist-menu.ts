@@ -9,7 +9,7 @@ module.exports = {
 		ephemeral: true,
 	},
 
-	data: new SlashCommandBuilder()
+	builder: new SlashCommandBuilder()
 		.setName("playlist-menu")
 		.setDescription("Customise your playlists here!"),
 

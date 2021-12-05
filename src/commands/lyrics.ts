@@ -8,7 +8,7 @@ module.exports = {
 		defer: true,
 	},
 
-	data: new SlashCommandBuilder()
+	builder: new SlashCommandBuilder()
 		.setName("lyrics")
 		.setDescription("Find a track's lyrics by title. Leave field empty for the current track.")
 		.addStringOption(option => option

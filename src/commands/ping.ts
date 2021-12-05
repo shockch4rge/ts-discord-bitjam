@@ -8,7 +8,7 @@ module.exports = {
         defer: true,
     },
 
-    data: new SlashCommandBuilder()
+    builder: new SlashCommandBuilder()
         .setName("ping")
         .setDescription("Get the bot's response time, in milliseconds."),
 

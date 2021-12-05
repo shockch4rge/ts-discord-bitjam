@@ -9,7 +9,7 @@ module.exports = {
         defer: true,
     },
 
-    data: new SlashCommandBuilder()
+    builder: new SlashCommandBuilder()
         .setName("queue")
         .setDescription("View the current queue."),
 

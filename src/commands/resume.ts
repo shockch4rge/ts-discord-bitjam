@@ -8,7 +8,7 @@ module.exports = {
         defer: true,
     },
 
-    data: new SlashCommandBuilder()
+    builder: new SlashCommandBuilder()
         .setName("resume")
         .setDescription("Resumes the player."),
 

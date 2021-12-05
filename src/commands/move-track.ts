@@ -8,7 +8,7 @@ module.exports = {
         defer: true,
     },
 
-    data: new SlashCommandBuilder()
+    builder: new SlashCommandBuilder()
         .setName("move-track")
         .setDescription("Move a track at an index to another one.")
         .addIntegerOption(option => option

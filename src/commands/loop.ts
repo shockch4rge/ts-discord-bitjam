@@ -9,7 +9,7 @@ module.exports = {
         defer: false,
     },
 
-    data: new SlashCommandBuilder()
+    builder: new SlashCommandBuilder()
         .setName("loop")
         .setDescription("Choose a looping state for music playing.")
         .addStringOption(option => option

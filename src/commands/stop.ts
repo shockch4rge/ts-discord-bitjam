@@ -8,7 +8,7 @@ module.exports = {
         defer: true
     },
 
-    data: new SlashCommandBuilder()
+    builder: new SlashCommandBuilder()
         .setName("stop")
         .setDescription("Clears the queue and stops the player."),
 
@@ -36,9 +36,9 @@ module.exports = {
         try {
             await helper.cache.service!.stop();
         }
-        catch ({ message }) {
+        catch (err) {
             return await helper.respond(new MessageEmbed()
-                .setAuthor(`❌  ${message}`)
+                .setAuthor(`❌  ${err}`)
                 .setColor("RED"));
         }
 

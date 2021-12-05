@@ -8,7 +8,7 @@ module.exports = {
         defer: true,
     },
 
-    data: new SlashCommandBuilder()
+    builder: new SlashCommandBuilder()
         .setName("remove")
         .setDescription("Remove a single/range of tracks from specified indexes.")
         .addIntegerOption(option => option
