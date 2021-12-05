@@ -16,7 +16,7 @@ export default class SlashCommandDeployer {
         this.interactionFiles = interactionFiles;
         this.commands = [];
 
-        this.interactionFiles.forEach(file => this.commands.push(file.data));
+        this.interactionFiles.forEach(file => this.commands.push(file.builder));
     }
 
     public async deploy() {

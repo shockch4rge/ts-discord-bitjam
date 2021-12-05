@@ -1,5 +1,5 @@
 import GuildCache from "../db/GuildCache";
-import { CommandInteraction, GuildMember, MessageEmbed } from "discord.js";
+import { CommandInteraction, GuildMember, MessageEmbed, WebhookEditMessageOptions } from "discord.js";
 import { InteractionHelper } from "../utilities/InteractionHelper";
 
 export default class SlashCommandHelper extends InteractionHelper<CommandInteraction> {
@@ -13,11 +13,14 @@ export default class SlashCommandHelper extends InteractionHelper<CommandInterac
         return channel && channel.id === this.cache.guild.me?.voice.channelId;
     }
 
-    public async respond(options: MessageEmbed | string) {
+    public async respond(options: MessageEmbed | WebhookEditMessageOptions | string) {
         if (options instanceof MessageEmbed) {
             await this.interaction.followUp({
                 embeds: [options],
             }).catch(() => {});
+        }
+        else if (typeof options === "object") {
+            await this.interaction.editReply(options);
         }
         else {
             await this.interaction.followUp({

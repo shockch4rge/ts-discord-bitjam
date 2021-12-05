@@ -31,6 +31,7 @@ export default class BotHelper {
 	public setup() {
 		this.setupCommandInteractions();
 		this.setupButtonInteractions();
+		this.setupMenuInteractions()
 		this.setupBotEvents();
 	}
 
@@ -192,7 +193,7 @@ export default class BotHelper {
 
 		for (const fileName of fileNames) {
 			const interactionFile = require(`../commands/${fileName}`) as SlashCommandFile;
-			this.slashCommandFile.set(interactionFile.data.name, interactionFile);
+			this.slashCommandFile.set(interactionFile.builder.name, interactionFile);
 		}
 	}
 
@@ -215,7 +216,26 @@ export default class BotHelper {
 		}
 	}
 
-	public static isFile(fileName: string) {
+	private setupMenuInteractions() {
+		let fileNames: string[];
+
+		try {
+			fileNames = fs.readdirSync(path.join(__dirname, "../menus"))
+				.filter(fileName => BotHelper.isFile(fileName));
+		}
+		catch (err) {
+			// @ts-ignore
+			console.error(`There was an error reading a file: ${err.message}`);
+			return;
+		}
+
+		for (const fileName of fileNames) {
+			const menuFile = require(`../menus/${fileName}`) as MenuFile;
+			this.menuFiles.set(menuFile.id, menuFile);
+		}
+	}
+
+	private static isFile(fileName: string) {
 		return fileName.endsWith(".ts") || fileName.endsWith(".js");
 	}
 }
@@ -225,7 +245,7 @@ export type SlashCommandFile = {
 		defer: boolean,
 		ephemeral: boolean,
 	}
-	data: SlashCommandBuilder,
+	builder: SlashCommandBuilder,
 	guard?: {
 		test: (helper: SlashCommandHelper) => Promise<void>,
 		fail: (helper: SlashCommandHelper, error: string) => Promise<void>,

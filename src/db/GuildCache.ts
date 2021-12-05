@@ -3,8 +3,10 @@ import MusicService from "../services/MusicService";
 import { ApiHelper } from "../helpers/ApiHelper";
 import AfterEvery from "after-every";
 import { firestore } from "firebase-admin";
+import Playlist from "../models/Playlist";
 import CollectionReference = firestore.CollectionReference;
 import DocumentData = firestore.DocumentData;
+import FieldValue = firestore.FieldValue;
 
 export default class GuildCache {
 	public readonly bot: Client;
@@ -34,14 +36,50 @@ export default class GuildCache {
 		return this.userRefs.doc(userId).collection("playlists");
 	}
 
-	public async createUserPlaylist(userId: string, name: string) {
-		const playlistRefs = await this.getUserPlaylistRefs(userId).get();
+	public async getUserPlaylist(userId: string, name: string) {
 		const playlistRef = this.getUserPlaylistRefs(userId).doc(name);
+		const snap = await playlistRef.get();
 
-		if (!(await playlistRef.get()).exists) {
+		return new Playlist({
+			name: snap.id,
+			trackUrls: snap.get("urls") as Array<string>,
+		})
+	}
+
+	public async addUrlToUserPlaylist(url: string, name: string, userId: string) {
+		const playlistRef = this.getUserPlaylistRefs(userId).doc(name);
+		const snap = await playlistRef.get();
+
+		if (snap.exists) {
+			await playlistRef.update({
+				urls: FieldValue.arrayUnion(url),
+			})
+		}
+	}
+
+	public async createUserPlaylist(userId: string, name: string) {
+		const playlistRef = this.getUserPlaylistRefs(userId).doc(name);
+		const snap = await playlistRef.get();
+
+		if (!snap.exists) {
 			await playlistRef.create({
-				urls: []
+				urls: [],
 			});
+		}
+		else {
+			throw new Error("A playlist already exists with the same name!");
+		}
+	}
+
+	public async deleteUserPlaylist(userId: string, name: string) {
+		const playlistRef = this.getUserPlaylistRefs(userId).doc(name);
+		const snap = await playlistRef.get();
+
+		if (snap.exists) {
+			await playlistRef.delete();
+		}
+		else {
+			throw new Error("That playlist doesn't exist!");
 		}
 	}
 
