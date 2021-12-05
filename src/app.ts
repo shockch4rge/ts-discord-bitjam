@@ -7,7 +7,7 @@ import qs from "qs";
 import fs from "fs/promises";
 import path from "path";
 
-const auth = require("../auth.json")
+const config = require("../config.json")
 
 
 const start = () => {
@@ -31,7 +31,7 @@ const start = () => {
                     Authorization:
                         "Basic " +
                         Buffer.from(
-                            auth.spotify.clientId + ":" + auth.spotify.clientSecret
+                            config.spotify.clientId + ":" + config.spotify.clientSecret
                         ).toString("base64"),
                     "Content-Type": "application/x-www-form-urlencoded"
                 }
@@ -39,13 +39,13 @@ const start = () => {
         );
 
         // Replace old access token with new access token
-        const config_path = path.join(__dirname, "../auth.json")
+        const config_path = path.join(__dirname, "../config.json")
         const config_data = await fs.readFile(config_path, "utf8")
         await fs.writeFile(
             config_path,
             config_data
-                .replace(auth.spotify.accessToken, spotify_res.data.access_token)
-                .replace(auth.spotify.refreshToken, spotify_res.data.refresh_token)
+                .replace(config.spotify.accessToken, spotify_res.data.access_token)
+                .replace(config.spotify.refreshToken, spotify_res.data.refresh_token)
         )
         console.log(`Replaced Spotify API Access token`)
 
@@ -60,7 +60,7 @@ const start = () => {
             const botHelper = new BotHelper(bot)
             botHelper.setup();
 
-            void bot.login(auth.bot_token);
+            void bot.login(config.bot_token);
         }
 
         startBot();
@@ -72,7 +72,7 @@ const start = () => {
         // Get spotify authorization code
         const spotify_url = new URL("https://accounts.spotify.com/authorize");
         spotify_url.searchParams.append("response_type", "code");
-        spotify_url.searchParams.append("client_id", auth.spotify.clientId);
+        spotify_url.searchParams.append("client_id", config.spotify.clientId);
         spotify_url.searchParams.append("redirect_uri", "http://localhost:4296");
         spotify_url.searchParams.append("scope", "user-read-private playlist-read-private");
         await open(spotify_url.href, { wait: true });
