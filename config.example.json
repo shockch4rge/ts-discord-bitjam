@@ -2,11 +2,21 @@
   "bot_token": "Your client's token",
   "app_id": "Your app's ID",
   "yt_token": "Your Youtube API key",
+  "emojis": {
+    "plus": "",
+    "minus": "",
+    "wastebasket": ""
+  },
   "spotify": {
     "clientId": "Find this in your app's dashboard",
     "clientSecret": "Find this in your app's dashboard",
     "accessToken": "Send authorisation request to Spotify",
     "refreshToken": "Send authorisation request to Spotify"
+  },
+  "genius": {
+    "clientId": "",
+    "clientSecret": "",
+    "accessToken": ""
   },
   "firebase": {
     "service_account": {
