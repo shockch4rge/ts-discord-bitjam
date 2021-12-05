@@ -24,14 +24,20 @@ module.exports = {
 			await helper.cache.addUrlToUserPlaylist(url, playlistName, member.id);
 		}
 		catch (error) {
-			await helper.respond(new MessageEmbed()
-				.setAuthor(`❌  ${error}`)
-				.setColor("RED"));
+			await helper.update({
+				embeds: [new MessageEmbed()
+					.setAuthor(`❌  ${error}`)
+					.setColor("RED")],
+				components: [],
+			});
 		}
 
-		await helper.respond(new MessageEmbed()
-			.setAuthor(`✔️  Added the url to ${playlistName}!`)
-			.setColor("GREEN"));
+		await helper.update({
+			embeds: [new MessageEmbed()
+				.setAuthor(`✔️  Added the url to ${playlistName}!`)
+				.setColor("GREEN")],
+			components: [],
+		});
 	}
 
 } as MenuFile;

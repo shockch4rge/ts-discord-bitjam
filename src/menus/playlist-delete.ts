@@ -17,14 +17,20 @@ module.exports = {
 			await helper.cache.deleteUserPlaylist(member.id, playlistName);
 		}
 		catch (error) {
-			await helper.respond(new MessageEmbed()
-				.setAuthor(`❌  ${error}`)
-				.setColor("RED"));
+			await helper.update({
+				embeds: [new MessageEmbed()
+					.setAuthor(`❌  ${error}`)
+					.setColor("RED")],
+				components: [],
+			});
 		}
 
-		await helper.respond(new MessageEmbed()
-			.setAuthor(`✔️  Deleted ${playlistName} from your playlists!`)
-			.setColor("GREEN"))
+		await helper.update({
+			embeds: [new MessageEmbed()
+				.setAuthor(`✔️  Deleted ${playlistName} from your playlists!`)
+				.setColor("GREEN")],
+			components: [],
+		})
 	}
 
 } as MenuFile;
