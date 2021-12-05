@@ -106,7 +106,7 @@ export default class BotHelper {
 						await slashCommandFile.guard.test(helper);
 					}
 					catch (error: any) {
-						await slashCommandFile.guard.fail(helper, error.message);
+						return await slashCommandFile.guard.fail(helper, error.message);
 					}
 				}
 
