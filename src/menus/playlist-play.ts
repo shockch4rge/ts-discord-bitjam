@@ -12,10 +12,25 @@ module.exports = {
 
 	id: "playlist-play",
 
+	guard: {
+		test: async helper => {
+			const member = helper.interaction.member as GuildMember;
+
+			if (!member.voice.channel) {
+				throw new Error("❌  You must be in a voice channel first!");
+			}
+		},
+
+		fail: async (helper, error) => {
+			return await helper.respond(new MessageEmbed()
+				.setAuthor(`${error}`)
+				.setColor("RED"));
+		},
+	},
+
 	execute: async helper => {
 		const member = helper.interaction.member as GuildMember;
 		const name = helper.interaction.values[0];
-		console.log(name);
 		const playlist = await helper.cache.getUserPlaylist(member.id, name);
 
 		if (!helper.cache.service) {
@@ -29,24 +44,37 @@ module.exports = {
 			await helper.cache.affirmConnectionMinutely(member.voice.channelId!);
 		}
 
+		if (playlist.trackUrls.length <= 0) {
+			return await helper.respond(new MessageEmbed()
+				.setAuthor(`❌  The playlist is empty!`)
+				.setColor("RED"));
+		}
+
 		const service = helper.cache.service;
+		const tracks: Track[] = [];
 
 		try {
 			for (let i = 0; i < playlist.trackUrls.length; i++) {
-				const track = (await Track.from(playlist.trackUrls[i], helper.cache.apiHelper, member.id)) as Track;
-				await service.enqueue(track);
+				tracks.push((await Track.from(playlist.trackUrls[i], helper.cache.apiHelper, member.id)) as Track);
+				await service.enqueue(tracks);
 			}
 			await service.play();
 		}
 		catch (error) {
-			return await helper.respond(new MessageEmbed()
-				.setAuthor(`❌  ${error}`)
-				.setColor("RED"));
+			return await helper.update({
+				embeds: [new MessageEmbed()
+					.setAuthor(`❌  ${error}`)
+					.setColor("RED")],
+				components: [],
+			});
 		}
 
-		await helper.respond(new MessageEmbed()
-			.setAuthor(`✔️  Appended ${playlist.trackUrls.length} tracks from ${playlist.name} to the queue!`)
-			.setColor("GREEN"));
+		await helper.update({
+			embeds: [new MessageEmbed()
+				.setAuthor(`✔️  Appended ${tracks.length} tracks from '${playlist.name}' to the queue!`)
+				.setColor("GREEN")],
+			components: [],
+		});
 	},
 
 } as MenuFile;
