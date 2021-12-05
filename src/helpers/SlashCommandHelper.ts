@@ -1,8 +1,14 @@
 import GuildCache from "../db/GuildCache";
-import { CommandInteraction, GuildMember, MessageEmbed, WebhookEditMessageOptions } from "discord.js";
+import {
+    CommandInteraction,
+    GuildMember,
+    MessageEmbed,
+    WebhookEditMessageOptions,
+    WebhookMessageOptions
+} from "discord.js";
 import { InteractionHelper } from "../utilities/InteractionHelper";
 
-export default class SlashCommandHelper extends InteractionHelper<CommandInteraction> {
+export class SlashCommandHelper extends InteractionHelper<CommandInteraction> {
     public constructor(cache: GuildCache, interaction: CommandInteraction) {
         super(cache, interaction);
     }
@@ -27,6 +33,14 @@ export default class SlashCommandHelper extends InteractionHelper<CommandInterac
                 content: options,
             }).catch(() => {});
         }
+
+    }
+
+    public async edit(options: MessageEmbed | WebhookMessageOptions | string): Promise<void> {
+        return Promise.resolve(undefined);
+    }
+
+    public async update(options: MessageEmbed | WebhookMessageOptions | string): Promise<void> {
 
     }
 
@@ -57,4 +71,5 @@ export default class SlashCommandHelper extends InteractionHelper<CommandInterac
     public getInteractionBoolean(name: string) {
         return this.interaction.options.getBoolean(name);
     }
+
 }

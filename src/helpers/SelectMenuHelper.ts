@@ -1,5 +1,11 @@
 import { InteractionHelper } from "../utilities/InteractionHelper";
-import { MessageEmbed, MessageSelectMenu, SelectMenuInteraction, WebhookEditMessageOptions } from "discord.js";
+import {
+	MessageEmbed,
+	MessageSelectMenu,
+	SelectMenuInteraction,
+	WebhookEditMessageOptions,
+	WebhookMessageOptions
+} from "discord.js";
 import GuildCache from "../db/GuildCache";
 
 export class SelectMenuHelper extends InteractionHelper<SelectMenuInteraction> {
@@ -26,5 +32,26 @@ export class SelectMenuHelper extends InteractionHelper<SelectMenuInteraction> {
 
 	public getComponent() {
 		return this.interaction.component as MessageSelectMenu;
+	}
+
+	public async edit(options: MessageEmbed | WebhookMessageOptions | string): Promise<void> {
+		return Promise.resolve(undefined);
+	}
+
+	public async update(options: MessageEmbed | WebhookMessageOptions | string): Promise<void> {
+		if (options instanceof MessageEmbed) {
+			await this.interaction.update({
+				embeds: [options],
+			}).catch(() => {});
+		}
+		else if (typeof options === "object") {
+			await this.interaction.update(options).catch(() => {});
+		}
+		else {
+			await this.interaction.update({
+				content: options,
+			}).catch(() => {});
+		}
+
 	}
 }

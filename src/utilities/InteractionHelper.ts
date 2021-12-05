@@ -1,4 +1,4 @@
-import { Interaction } from "discord.js";
+import { Interaction, MessageEmbed, WebhookMessageOptions } from "discord.js";
 import GuildCache from "../db/GuildCache";
 
 export abstract class InteractionHelper<I extends Interaction> {
@@ -11,4 +11,7 @@ export abstract class InteractionHelper<I extends Interaction> {
     }
 
     public abstract respond(content: string): Promise<void>;
+
+    public abstract edit(options: MessageEmbed | WebhookMessageOptions | string): Promise<void>;
+
 }
