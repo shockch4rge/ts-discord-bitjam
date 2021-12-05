@@ -1,11 +1,3 @@
-const auth = require("../../auth.json")
-
-export const youtubeOptions = {
-    maxResults: 1,
-    key: auth.yt_token,
-    type: 'audio',
-} as const;
-
 export function delay(ms: number): Promise<unknown> {
     return new Promise(resolve => {
         setTimeout(resolve, ms);

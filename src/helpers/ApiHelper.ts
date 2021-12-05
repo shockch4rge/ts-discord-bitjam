@@ -3,7 +3,7 @@ import Track from "../models/Track";
 import SpotifyWebApi from "spotify-web-api-node";
 import ytpl from "ytpl";
 
-const auth = require("../../auth.json");
+const auth = require("../../config.json");
 
 export class ApiHelper {
 	private readonly spotifyApi: SpotifyWebApi;

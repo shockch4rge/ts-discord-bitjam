@@ -4,13 +4,14 @@ import admin, { firestore } from "firebase-admin";
 import CollectionReference = firestore.CollectionReference;
 import DocumentData = firestore.DocumentData;
 
-const auth = require("../../auth.json");
+const auth = require("../../config.json");
 
 export default class BotCache {
     private readonly db: FirebaseFirestore.Firestore;
     public readonly bot: Client;
     public readonly guildCaches: Collection<string, GuildCache>;
     public readonly guildRefs: CollectionReference<DocumentData>;
+    public readonly userRefs: CollectionReference<DocumentData>;
 
     public constructor(bot: Client) {
         // init db
@@ -19,7 +20,8 @@ export default class BotCache {
 
         this.bot = bot;
         this.guildCaches = new Collection<string, GuildCache>();
-        this.guildRefs = this.db.collection(auth.firebase.collection);
+        this.guildRefs = this.db.collection(auth.firebase.collection.guilds);
+        this.userRefs = this.db.collection(auth.firebase.collection.users);
     }
 
     public async getGuildCache(guild: Guild) {
@@ -40,7 +42,7 @@ export default class BotCache {
             await guildRef.create({});
         }
 
-        const cache = new GuildCache(this.bot, guild);
+        const cache = new GuildCache(this.bot, guild, this.userRefs);
         this.guildCaches.set(guild.id, cache);
         return cache;
     }
