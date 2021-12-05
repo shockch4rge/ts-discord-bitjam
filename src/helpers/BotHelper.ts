@@ -4,7 +4,7 @@ import path from "path";
 import SlashCommandDeployer from "../utilities/SlashCommandDeployer";
 import GuildCache from "../db/GuildCache";
 import BotCache from "../db/BotCache";
-import SlashCommandHelper from "./SlashCommandHelper";
+import { SlashCommandHelper } from "./SlashCommandHelper";
 import { ButtonHelper } from "./ButtonHelper";
 import { delay } from "../utilities/Utils";
 import { SlashCommandBuilder, SlashCommandSubcommandBuilder } from "@discordjs/builders";
@@ -268,6 +268,10 @@ export type MenuFile = {
 		defer: boolean,
 		ephemeral: boolean,
 	}
+	guard?: {
+		test: (helper: SelectMenuHelper) => Promise<void>,
+		fail: (helper: SelectMenuHelper, error: string) => Promise<void>,
+	},
 	id: string,
 	execute: (helper: SelectMenuHelper) => Promise<void>;
 }
