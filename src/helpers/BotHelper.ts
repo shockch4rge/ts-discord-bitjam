@@ -8,6 +8,7 @@ import SlashCommandHelper from "./SlashCommandHelper";
 import { ButtonHelper } from "./ButtonHelper";
 import { delay } from "../utilities/Utils";
 import { SlashCommandBuilder, SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import { SelectMenuHelper } from "./SelectMenuHelper";
 
 export default class BotHelper {
 	public readonly bot: Client;
@@ -15,6 +16,7 @@ export default class BotHelper {
 	public readonly messageFiles: Collection<string, Message>;
 	public readonly slashCommandFile: Collection<string, SlashCommandFile>;
 	public readonly buttonFiles: Collection<string, ButtonFile>;
+	public readonly menuFiles: Collection<string, MenuFile>
 
 	public constructor(bot: Client) {
 		this.bot = bot;
@@ -23,6 +25,7 @@ export default class BotHelper {
 		this.messageFiles = new Collection<string, Message>();
 		this.slashCommandFile = new Collection<string, SlashCommandFile>();
 		this.buttonFiles = new Collection<string, ButtonFile>();
+		this.menuFiles = new Collection<string, MenuFile>()
 	}
 
 	public setup() {
@@ -65,6 +68,8 @@ export default class BotHelper {
 			}
 
 		});
+
+		this.bot.on("error", error => console.error(`❗  ERROR - ${error.name}: ${error.message}`));
 
 		// messageCreate
 		this.bot.on("messageCreate", async message => {
@@ -122,7 +127,31 @@ export default class BotHelper {
 					console.warn(err);
 					await interaction.reply({ content: "There was an error executing this button!" });
 					await delay(5000);
-					await interaction.deleteReply();
+					await interaction.deleteReply().catch(() => {});
+				}
+			}
+
+			// Select menu
+			if (interaction.isSelectMenu()) {
+				const menuFile = this.menuFiles.get(interaction.customId);
+				if (!menuFile) return;
+
+				const helper = new SelectMenuHelper(guildCache, interaction);
+
+				if (menuFile.params.defer) {
+					await interaction.deferReply({
+						ephemeral: menuFile.params.ephemeral
+					});
+				}
+
+				try {
+					await menuFile.execute(helper);
+				}
+				catch (err) {
+					console.warn(err);
+					await interaction.reply({ content: "There was an error executing this button!" });
+					await delay(5000);
+					await interaction.deleteReply().catch(() => {});
 				}
 			}
 		});
@@ -212,4 +241,13 @@ export type SlashSubCommandFile = {
 export type ButtonFile = {
 	id: string,
 	execute: (helper: ButtonHelper) => Promise<void>;
+}
+
+export type MenuFile = {
+	params: {
+		defer: boolean,
+		ephemeral: boolean,
+	}
+	id: string,
+	execute: (helper: SelectMenuHelper) => Promise<void>;
 }
