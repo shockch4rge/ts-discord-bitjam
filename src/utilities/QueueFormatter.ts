@@ -1,6 +1,6 @@
 import Track from "../models/Track";
 import { MessageEmbed } from "discord.js";
-import { formatTime } from "./Utils";
+import { CHAR, formatTime } from "./Utils";
 
 export class QueueFormatter {
     private readonly queue: Track[];
@@ -15,16 +15,16 @@ export class QueueFormatter {
         const numbers = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
 
         if (this.queue.length > 1) {
-            embed.addField(`___`, "...");
+            embed.addField(`___`, CHAR.EMPTY_SPACE);
 
             // append tracks top down from newest
-            for (let i = 0; i < this.queue.length; i++) {
+            for (let i = 1; i < this.queue.length; i++) {
                 // append up to 9 fields
-                if (i >= 8) break;
+                if (i >= 9) break;
 
                 const track = this.queue[i];
                 embed.addField(
-                    `> ${numbers[i]} :   ${track.title} :: ${track.artist}`,
+                    `> ${numbers[i - 1]} :   ${track.title} :: ${track.artist}`,
                     `Duration: ${formatTime(track.duration)} - Requested by <@!${track.requester}>`
                 );
             }

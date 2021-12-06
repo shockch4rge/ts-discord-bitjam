@@ -25,7 +25,7 @@ module.exports = {
 
         fail: async (helper, error) => {
             return await helper.respond(new MessageEmbed()
-                .setAuthor(`❌ ${error}`)
+                .setAuthor(`${error}`)
                 .setColor("RED"));
         },
     },
