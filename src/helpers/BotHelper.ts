@@ -14,7 +14,7 @@ export default class BotHelper {
 	public readonly bot: Client;
 	public readonly botCache: BotCache;
 	public readonly messageFiles: Collection<string, Message>;
-	public readonly slashCommandFile: Collection<string, SlashCommandFile>;
+	public readonly slashCommandFiles: Collection<string, SlashCommandFile>;
 	public readonly buttonFiles: Collection<string, ButtonFile>;
 	public readonly menuFiles: Collection<string, MenuFile>
 
@@ -23,7 +23,7 @@ export default class BotHelper {
 		this.botCache = new BotCache(this.bot);
 
 		this.messageFiles = new Collection<string, Message>();
-		this.slashCommandFile = new Collection<string, SlashCommandFile>();
+		this.slashCommandFiles = new Collection<string, SlashCommandFile>();
 		this.buttonFiles = new Collection<string, ButtonFile>();
 		this.menuFiles = new Collection<string, MenuFile>()
 	}
@@ -38,7 +38,6 @@ export default class BotHelper {
 	private setupBotEvents() {
 		// ready
 		this.bot.on("ready", async bot => {
-			console.log(`${bot.user.tag} is ready!`);
 			const guilds = this.bot.guilds.cache.toJSON();
 
 			for (const guild of guilds) {
@@ -54,7 +53,7 @@ export default class BotHelper {
 				}
 
 				// deploy/refresh slash commands for each guild
-				const deployer = new SlashCommandDeployer(guild.id, this.slashCommandFile);
+				const deployer = new SlashCommandDeployer(guild.id, this.slashCommandFiles);
 
 				try {
 					await deployer.deploy();
@@ -68,6 +67,7 @@ export default class BotHelper {
 				console.log(`✅  Restored cache for ${guild.name}`);
 			}
 
+			console.log(`${bot.user.tag} is ready!`);
 		});
 
 		this.bot.on("error", error => console.error(`❗  ERROR - ${error.name}: ${error.message}`));
@@ -91,13 +91,13 @@ export default class BotHelper {
 
 			// Slash command
 			if (interaction.isCommand()) {
-				const slashCommandFile = this.slashCommandFile.get(interaction.commandName);
+				const slashCommandFile = this.slashCommandFiles.get(interaction.commandName);
 				if (!slashCommandFile) return;
 
 				if (slashCommandFile.params.defer) {
 					await interaction.deferReply({
 						ephemeral: slashCommandFile.params.ephemeral,
-					});
+					}).catch(() => {});
 				}
 
 				const helper = new SlashCommandHelper(guildCache, interaction);
@@ -107,7 +107,8 @@ export default class BotHelper {
 						await slashCommandFile.guard.test(helper);
 					}
 					catch (error: any) {
-						return await slashCommandFile.guard.fail(helper, error.message);
+						await slashCommandFile.guard.fail(helper, error.message);
+						return;
 					}
 				}
 
@@ -139,18 +140,15 @@ export default class BotHelper {
 
 				const helper = new SelectMenuHelper(guildCache, interaction);
 
-				if (menuFile.params.defer) {
-					await interaction.deferReply({
-						ephemeral: menuFile.params.ephemeral
-					});
-				}
-
 				try {
 					await menuFile.execute(helper);
 				}
 				catch (err) {
 					console.warn(err);
-					await interaction.reply({ content: "There was an error executing this button!" });
+					await helper.update({
+						content: "There was an error executing this menu!",
+						components: [],
+					});
 					await delay(5000);
 					await interaction.deleteReply().catch(() => {});
 				}
@@ -160,7 +158,8 @@ export default class BotHelper {
 		// guildCreate
 		this.bot.on("guildCreate", async guild => {
 			await this.botCache.createGuildCache(guild);
-			const deployer = new SlashCommandDeployer(guild.id, this.slashCommandFile);
+
+			const deployer = new SlashCommandDeployer(guild.id, this.slashCommandFiles);
 
 			try {
 				await deployer.deploy();
@@ -182,6 +181,7 @@ export default class BotHelper {
 		let fileNames: string[];
 
 		try {
+			// don't filter with .ts suffix as they could be directories
 			fileNames = fs.readdirSync(path.join(__dirname, "../commands"))
 				.filter(fileName => BotHelper.isFile(fileName));
 		}
@@ -192,8 +192,8 @@ export default class BotHelper {
 		}
 
 		for (const fileName of fileNames) {
-			const interactionFile = require(`../commands/${fileName}`) as SlashCommandFile;
-			this.slashCommandFile.set(interactionFile.builder.name, interactionFile);
+			const slashCommandFile = require(`../commands/${fileName}`) as SlashCommandFile;
+			this.slashCommandFiles.set(slashCommandFile.builder.name, slashCommandFile);
 		}
 	}
 
@@ -238,6 +238,22 @@ export default class BotHelper {
 	private static isFile(fileName: string) {
 		return fileName.endsWith(".ts") || fileName.endsWith(".js");
 	}
+
+	private static isDir(path: fs.PathLike) {
+		try {
+			const stat = fs.lstatSync(path)
+			const yesDir = stat.isDirectory();
+			const yesFile = stat.isFile();
+
+			console.log(yesDir);
+			return stat.isDirectory();
+		}
+		catch (error) {
+			// @ts-ignore
+			console.log(error.message);
+			return false;
+		}
+	}
 }
 
 export type SlashCommandFile = {
@@ -254,7 +270,15 @@ export type SlashCommandFile = {
 }
 
 export type SlashSubCommandFile = {
-	data: SlashCommandSubcommandBuilder,
+	params: {
+		defer: boolean,
+		ephemeral: boolean,
+	},
+	builder: SlashCommandSubcommandBuilder,
+	guard?: {
+		test: (helper: SlashCommandHelper) => Promise<void>,
+		fail: (helper: SlashCommandHelper, error: string) => Promise<void>,
+	},
 	execute: (helper: SlashCommandHelper) => Promise<void>,
 }
 
