@@ -26,7 +26,7 @@ export class SlashCommandHelper extends InteractionHelper<CommandInteraction> {
             }).catch(() => {});
         }
         else if (typeof options === "object") {
-            await this.interaction.editReply(options);
+            await this.interaction.followUp(options);
         }
         else {
             await this.interaction.followUp({
@@ -37,7 +37,19 @@ export class SlashCommandHelper extends InteractionHelper<CommandInteraction> {
     }
 
     public async edit(options: MessageEmbed | WebhookMessageOptions | string): Promise<void> {
-        return Promise.resolve(undefined);
+        if (options instanceof MessageEmbed) {
+            await this.interaction.editReply({
+                embeds: [options],
+            }).catch(() => {});
+        }
+        else if (typeof options === "object") {
+            await this.interaction.editReply(options);
+        }
+        else {
+            await this.interaction.editReply({
+                content: options,
+            }).catch(() => {});
+        }
     }
 
     public async update(options: MessageEmbed | WebhookMessageOptions | string): Promise<void> {

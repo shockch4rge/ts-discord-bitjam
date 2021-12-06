@@ -18,6 +18,7 @@ module.exports = {
 		const builder = new PlaylistMenuBuilder(helper);
 		const playlistNames = (await helper.cache.getUserPlaylistRefs(member.id).get())
 			.docs.map(doc => doc.id);
+
 		await helper.respond(builder.forPlaylistSelect(playlistNames, "playlist-delete"));
 	}
 

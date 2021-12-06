@@ -21,7 +21,15 @@ export default class GuildCache {
 		this.userRefs = userRefs;
 		this.apiHelper = new ApiHelper();
 
+		this.resetBot();
+	}
+
+	// leave empty voice channels, un-nick
+	private resetBot() {
 		this.unNick();
+		if (this.guild.me!.voice.channel && this.guild.me!.voice.channel.members.size === 1) {
+			void this.guild.me!.voice.disconnect();
+		}
 	}
 
 	public nick(name: string) {
@@ -42,7 +50,7 @@ export default class GuildCache {
 
 		return new Playlist({
 			name: snap.id,
-			trackUrls: snap.get("urls") as Array<string>,
+			trackUrls: snap.get("urls") as string[],
 		})
 	}
 

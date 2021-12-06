@@ -38,7 +38,7 @@ export class SelectMenuHelper extends InteractionHelper<SelectMenuInteraction> {
 		return Promise.resolve(undefined);
 	}
 
-	public async update(options: MessageEmbed | WebhookMessageOptions | string): Promise<void> {
+	public async update(options: MessageEmbed | WebhookEditMessageOptions | string): Promise<void> {
 		if (options instanceof MessageEmbed) {
 			await this.interaction.update({
 				embeds: [options],

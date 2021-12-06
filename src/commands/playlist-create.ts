@@ -30,8 +30,7 @@ module.exports = {
 		}
 
 		await helper.respond(new MessageEmbed()
-			.setAuthor(`✔️  Created new playlist!`)
-			.setDescription(`Playlist Name: ${playlistName}`)
+			.setAuthor(`✔️  Created new playlist: ${playlistName}`)
 			.setColor("GREEN"));
 	},
 
