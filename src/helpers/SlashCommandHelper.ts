@@ -56,32 +56,36 @@ export class SlashCommandHelper extends InteractionHelper<CommandInteraction> {
 
     }
 
-    public getInteractionMentionable(name: string) {
+    public mentionable(name: string) {
         return this.interaction.options.getMentionable(name);
     }
 
-    public getInteractionChannel(name: string) {
+    public channel(name: string) {
         return this.interaction.options.getChannel(name);
     }
 
-    public getInteractionRole(name: string) {
+    public role(name: string) {
         return this.interaction.options.getRole(name);
     }
 
-    public getInteractionUser(name: string) {
+    public user(name: string) {
         return this.interaction.options.getUser(name);
     }
 
-    public getInteractionString(name: string) {
+    public string(name: string) {
         return this.interaction.options.getString(name);
     }
 
-    public getInteractionInteger(name: string) {
+    public integer(name: string) {
         return this.interaction.options.getInteger(name);
     }
 
-    public getInteractionBoolean(name: string) {
+    public boolean(name: string) {
         return this.interaction.options.getBoolean(name);
+    }
+
+    public subcommand() {
+        return this.interaction.options.getSubcommand();
     }
 
 }
