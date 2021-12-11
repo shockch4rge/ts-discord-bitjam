@@ -43,7 +43,7 @@ module.exports = {
 
 	execute: async helper => {
 		const service = helper.cache.service!;
-		const audioQuality = helper.getInteractionString("quality")! as AudioQuality;
+		const audioQuality = helper.string("quality")! as AudioQuality;
 
 		try {
 			await service.setAudioQuality(audioQuality);

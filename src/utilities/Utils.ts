@@ -4,7 +4,11 @@ export function delay(ms: number): Promise<unknown> {
     })
 }
 
-export const CHAR = {
+export const TEXT = {
+    EMOJIS: {
+        NUMBERS: ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"],
+
+    },
     /**
      * this is not a whitespace, but rather a special empty
      * braille character, which bypasses discord's whitespace trimming.

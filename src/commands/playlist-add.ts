@@ -19,7 +19,7 @@ module.exports = {
 
 	execute: async helper => {
 		 const member = helper.interaction.member as GuildMember;
-		 const url = helper.getInteractionString("url")!;
+		 const url = helper.string("url")!;
 
 		 const playlistNames = (await helper.cache.getUserPlaylistRefs(member.id).get())
 			 .docs.map(doc => doc.id);

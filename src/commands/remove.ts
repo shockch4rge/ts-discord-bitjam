@@ -12,11 +12,11 @@ module.exports = {
         .setName("remove")
         .setDescription("Remove a single/range of tracks from specified indexes.")
         .addIntegerOption(option => option
-            .setName("from-index")
+            .setName("from")
             .setDescription("Start removing tracks at this index. Fill only this option to remove one track. (min: 1)")
             .setRequired(true))
         .addIntegerOption(option => option
-            .setName("to-index")
+            .setName("to")
             .setDescription("Remove tracks up to this index. Leave empty to remove only one. (max: queue length - 1)")
             .setRequired(false)),
 
@@ -41,23 +41,25 @@ module.exports = {
     },
 
     execute: async helper => {
-        const fromIndex = helper.getInteractionInteger("from-index")!;
-        const toIndex = helper.getInteractionInteger("to-index") ?? 0;
+        const fromIndex = helper.integer("from")!;
+        const toIndex = helper.integer("to");
 
         try {
-            await helper.cache.service!.remove(fromIndex, toIndex);
+            if (!toIndex) {
+                await helper.cache.service!.removeOne(fromIndex);
+            }
+            else {
+                await helper.cache.service!.remove(fromIndex, toIndex);
+            }
         }
         catch ({ message }) {
             return await helper.respond(new MessageEmbed()
-                .setAuthor(`❌  ${message}`)
+                .setAuthor(`${message}`)
                 .setColor("RED"));
         }
 
         return await helper.respond(new MessageEmbed()
-            .setAuthor(`✔️  Removed ${toIndex <= 0 
-                ? `${fromIndex} track` 
-                : `${toIndex - fromIndex} tracks`}!`)
-            .setColor("GREEN"));
+            .setAuthor(`✔️  Removed ${toIndex ? `${toIndex - fromIndex} tracks` : "1 track"} !`))
     },
 
 } as SlashCommandFile;

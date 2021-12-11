@@ -12,11 +12,11 @@ module.exports = {
         .setName("move-track")
         .setDescription("Move a track at an index to another one.")
         .addIntegerOption(option => option
-            .setName("at-index")
+            .setName("at")
             .setDescription("The index of the track to move. (min = 1)")
             .setRequired(true))
         .addIntegerOption(option => option
-            .setName("to-index")
+            .setName("to")
             .setDescription("Move the track to this index. (min = 1)")
             .setRequired(true)),
 
@@ -41,8 +41,8 @@ module.exports = {
     },
 
     execute: async helper => {
-        const atIndex = helper.getInteractionInteger("at-index")!;
-        const toIndex = helper.getInteractionInteger("to-index")!;
+        const atIndex = helper.integer("at-index")!;
+        const toIndex = helper.integer("to-index")!;
 
         try {
             await helper.cache.service!.moveTrack(atIndex, toIndex);

@@ -18,7 +18,7 @@ module.exports = {
 
 	execute: async helper => {
 		const member = helper.interaction.member as GuildMember;
-		const playlistName = helper.getInteractionString("name")!;
+		const playlistName = helper.string("name")!;
 
 		try {
 			await helper.cache.createUserPlaylist(member.id, playlistName);

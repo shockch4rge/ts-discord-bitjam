@@ -38,7 +38,7 @@ module.exports = {
 
 	execute: async helper => {
 		// may be null
-		let title = helper.getInteractionString("title");
+		let title = helper.string("title");
 		let lyrics: string;
 
 		if (!title) {

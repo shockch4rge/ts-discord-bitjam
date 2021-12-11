@@ -41,7 +41,7 @@ module.exports = {
     },
 
     execute: async helper => {
-        const loopState = helper.getInteractionString("state")! as LoopState;
+        const loopState = helper.string("state")! as LoopState;
 
         try {
             await helper.cache.service!.setLoopingState(loopState);

@@ -2,7 +2,7 @@ import { SlashCommandFile } from "../helpers/BotHelper";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { GuildMember, MessageEmbed } from "discord.js";
 import { DiscordGatewayAdapterCreator, joinVoiceChannel } from "@discordjs/voice";
-import MusicService from "../services/MusicService";
+import AudioService from "../services/MusicService";
 import Track from "../models/Track";
 
 module.exports = {
@@ -45,12 +45,12 @@ module.exports = {
                 adapterCreator: member.guild.voiceAdapterCreator as DiscordGatewayAdapterCreator,
             });
 
-            helper.cache.service = new MusicService(connection, helper.cache);
+            helper.cache.service = new AudioService(connection, helper.cache);
             await helper.cache.affirmConnectionMinutely(member.voice.channelId!);
         }
 
         const service = helper.cache.service;
-        const query = helper.getInteractionString("query")!;
+        const query = helper.string("query")!;
         let tracks: Track | Track[];
 
         try {
