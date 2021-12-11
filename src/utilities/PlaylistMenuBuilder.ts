@@ -1,5 +1,4 @@
 import {
-	EmojiIdentifierResolvable,
 	GuildEmoji,
 	GuildMember,
 	Interaction,
@@ -10,6 +9,7 @@ import {
 	WebhookEditMessageOptions
 } from "discord.js";
 import { InteractionHelper } from "./InteractionHelper";
+import { TEXT } from "./Utils";
 
 const config = require("../../config.json");
 
@@ -19,7 +19,6 @@ export class PlaylistMenuBuilder<I extends Interaction> {
 	private readonly minus_emoji: GuildEmoji;
 	private readonly wastebasket_emoji: GuildEmoji;
 	private readonly arrow_left_emoji: GuildEmoji;
-	private readonly numbers: EmojiIdentifierResolvable[];
 
 	public constructor(helper: InteractionHelper<I>) {
 		this.helper = helper;
@@ -27,7 +26,6 @@ export class PlaylistMenuBuilder<I extends Interaction> {
 		this.minus_emoji = this.helper.cache.bot.emojis.cache.get(config.emojis.minus)!;
 		this.wastebasket_emoji = this.helper.cache.bot.emojis.cache.get(config.emojis.wastebasket)!;
 		this.arrow_left_emoji = this.helper.cache.bot.emojis.cache.get(config.emojis.arrow_left)!;
-		this.numbers = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
 	}
 
 	//TODO fix menuId/url being a dependency
@@ -47,7 +45,7 @@ export class PlaylistMenuBuilder<I extends Interaction> {
 			menuRows.push({
 				label: playlistNames[i],
 				value: playlistNames[i],
-				emoji: this.numbers[i],
+				emoji: TEXT.EMOJIS.NUMBERS[i],
 			});
 		}
 

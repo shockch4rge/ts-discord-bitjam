@@ -22,7 +22,7 @@ module.exports = {
 		},
 
 		fail: async (helper, error) => {
-			return await helper.respond(new MessageEmbed()
+			return await helper.update(new MessageEmbed()
 				.setAuthor(`${error}`)
 				.setColor("RED"));
 		},
@@ -32,6 +32,15 @@ module.exports = {
 		const member = helper.interaction.member as GuildMember;
 		const name = helper.interaction.values[0];
 		const playlist = await helper.cache.getUserPlaylist(member.id, name);
+
+		if (playlist.trackUrls.length <= 0) {
+			return await helper.update({
+				embeds: [new MessageEmbed()
+					.setAuthor(`❌  The playlist is empty!`)
+					.setColor("RED")],
+				components: [],
+			});
+		}
 
 		if (!helper.cache.service) {
 			const connection = joinVoiceChannel({
@@ -44,20 +53,14 @@ module.exports = {
 			await helper.cache.affirmConnectionMinutely(member.voice.channelId!);
 		}
 
-		if (playlist.trackUrls.length <= 0) {
-			return await helper.respond(new MessageEmbed()
-				.setAuthor(`❌  The playlist is empty!`)
-				.setColor("RED"));
-		}
-
 		const service = helper.cache.service;
-		const tracks: Track[] = [];
 
 		try {
 			for (let i = 0; i < playlist.trackUrls.length; i++) {
-				tracks.push((await Track.from(playlist.trackUrls[i], helper.cache.apiHelper, member.id)) as Track);
+				const tracks = await Track.from(playlist.trackUrls[i], helper.cache.apiHelper, member.id);
 				await service.enqueue(tracks);
 			}
+
 			await service.play();
 		}
 		catch (error) {
@@ -71,7 +74,7 @@ module.exports = {
 
 		await helper.update({
 			embeds: [new MessageEmbed()
-				.setAuthor(`✔️  Appended ${tracks.length} tracks from '${playlist.name}' to the queue!`)
+				.setAuthor(`✔️  Appended ${playlist.trackUrls.length} tracks from '${playlist.name}' to the queue!`)
 				.setColor("GREEN")],
 			components: [],
 		});

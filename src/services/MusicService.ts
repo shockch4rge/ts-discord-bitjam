@@ -76,7 +76,7 @@ export default class MusicService {
                 /**
                  * Once destroyed, stop the subscription.
                  */
-                this.stop().catch(() => {
+                this.clearQueue().catch(() => {
                 });
                 delete this.cache.service;
             }
@@ -226,6 +226,18 @@ export default class MusicService {
         Arrays.shuffle(this.queue);
     }
 
+    public async removeOne(fromIndex: number) {
+        if (this.queue.length === 0) {
+            throw new Error(`There are no tracks in the queue!`);
+        }
+
+        if (fromIndex <= 0 || fromIndex >= this.queue.length) {
+            throw new Error(`Invalid from-index provided: ${fromIndex}`);
+        }
+
+        this.queue.splice(fromIndex, 1);
+    }
+
     public async remove(fromIndex: number, toIndex: number): Promise<void> {
         if (this.queue.length === 0) {
             throw new Error(`There are no tracks in the queue!`);
@@ -264,7 +276,7 @@ export default class MusicService {
         Arrays.move(atIndex, toIndex, this.queue);
     }
 
-    public async stop(): Promise<void> {
+    public async clearQueue(): Promise<void> {
         if (this.player.state.status === AudioPlayerStatus.Idle) {
             throw new Error("The bot isn't playing any music!");
         }
