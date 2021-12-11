@@ -9,7 +9,7 @@ module.exports = {
     },
 
     builder: new SlashCommandBuilder()
-        .setName("stop")
+        .setName("clear-queue")
         .setDescription("Clears the queue and stops the player."),
 
     guard: {
@@ -34,7 +34,7 @@ module.exports = {
 
     execute: async helper => {
         try {
-            await helper.cache.service!.stop();
+            await helper.cache.service!.clearQueue();
         }
         catch (err) {
             return await helper.respond(new MessageEmbed()
