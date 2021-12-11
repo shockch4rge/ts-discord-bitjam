@@ -52,17 +52,6 @@ const start = () => {
         res.send("<script>window.close();</script>")
         server.close()
 
-        const startBot = () => {
-            const bot = new Client({
-                intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_VOICE_STATES]
-            });
-
-            const botHelper = new BotHelper(bot)
-            botHelper.setup();
-
-            void bot.login(config.bot_token);
-        }
-
         startBot();
     });
 
@@ -79,6 +68,22 @@ const start = () => {
     });
 }
 
+const startBot = () => {
+    const bot = new Client({
+        intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_VOICE_STATES]
+    });
+
+    const botHelper = new BotHelper(bot)
+    botHelper.setup();
+
+    void bot.login(config.bot_token);
+}
 
 
-start();
+if (process.platform === "win32") {
+    start();
+}
+
+if (process.platform === "linux") {
+    startBot();
+}
