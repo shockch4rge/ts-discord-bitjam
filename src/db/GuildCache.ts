@@ -51,31 +51,35 @@ export default class GuildCache {
 		return new Playlist({
 			name: snap.id,
 			trackUrls: snap.get("urls") as string[],
-		})
+		});
 	}
 
 	public async addUrlToUserPlaylist(url: string, name: string, userId: string) {
 		const playlistRef = this.getUserPlaylistRefs(userId).doc(name);
-		const snap = await playlistRef.get();
 
-		if (snap.exists) {
+		if ((await playlistRef.get()).exists) {
 			await playlistRef.update({
 				urls: FieldValue.arrayUnion(url),
-			})
+			});
 		}
 	}
 
 	public async createUserPlaylist(userId: string, name: string) {
-		const playlistRef = this.getUserPlaylistRefs(userId).doc(name);
-		const snap = await playlistRef.get();
+		const playlistRefs = this.getUserPlaylistRefs(userId);
 
-		if (!snap.exists) {
+		if ((await playlistRefs.get()).size >= 25) {
+			throw new Error("❌  You cannot have more than 25 playlists!");
+		}
+
+		const playlistRef = playlistRefs.doc(name);
+
+		if (!(await playlistRef.get()).exists) {
 			await playlistRef.create({
 				urls: [],
 			});
 		}
 		else {
-			throw new Error("A playlist already exists with the same name!");
+			throw new Error("❌  A playlist already exists with the same name!");
 		}
 	}
 
