@@ -2,7 +2,7 @@
 I love using Discord, so why not make another generic music bot for personal use? I got really interested in the way the other bots out there handled commands, queries, and all sorts of interactions, so I got to researching and creating my own.
 
 ## Description
-A pet project coded in my free time using TypeScript. Uses ts-node as runtime and the discord.js v13 API for Discord v9. Integrates slash commands for (debatably) a better user experience.
+A pet project coded in my free time using TypeScript. Uses ts-node as runtime and the discord.js v13 API for Discord v9. Integrates slash commands. User playlists are saved in Firebase.
 
 This was originally written in JavaScript, but I got really fed up with loose typing (coming from a Java background). This project was then [migrated over from JavaScript].
 
@@ -22,7 +22,10 @@ This was originally written in JavaScript, but I got really fed up with loose ty
 - [`express`]
 
 # Features
-- WIP
+- Play Youtube URLs, Spotify songs/albums/playlists or search YouTube with queries (in one command!)
+- Loop, remove songs, swap songs, replace songs (all that jazz!)
+- Adjustable audio quality (tested by an audiophile but no guaranteed change in quality!)
+- Create, play and delete your own playlists - max 25 (admittedly useless but cool!)
 
 # Notes
 Creating a track's audio resource can be extremely buggy when working with ytdl-core or ytdl. Most of the time, the track cuts out halfway and throws an error. This has been a known issue on ytdl's part and discordjs came up with a solution.
