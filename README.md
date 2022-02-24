@@ -6,6 +6,9 @@ A pet project coded in my free time using TypeScript. Uses ts-node as runtime an
 
 This was originally written in JavaScript, but I got really fed up with loose typing (coming from a Java background). This project was then [migrated over from JavaScript].
 
+## Credits
+Credits to Zechariah Tan for coming up with a 'framework' for the bot.
+
 ## Main Libraries
 - [`discord.js`]
 - [`@discordjs/voice`]
